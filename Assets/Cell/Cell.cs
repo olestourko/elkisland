@@ -12,10 +12,10 @@ public class Cell : MonoBehaviour {
 		Selected
 	}
 	
-	public Cell next_left;
-	public Cell next_top;
-	public Cell next_right;
-	public Cell next_bottom;
+	public Cell left;
+	public Cell top;
+	public Cell right;
+	public Cell bottom;
 	public string name;
 	
 	/*--------------------------------------------------------------------------*/
@@ -26,10 +26,10 @@ public class Cell : MonoBehaviour {
 	public List<Cell> dijkstra_GetNeighbors()
 	{
 		List<Cell> cells = new List<Cell>();
-		if(next_left != null) cells.Add(next_left);
-		if(next_top != null) cells.Add(next_top);
-		if(next_right != null) cells.Add(next_right);
-		if(next_bottom != null) cells.Add(next_bottom);
+		if(left != null) cells.Add(left);
+		if(top != null) cells.Add(top);
+		if(right != null) cells.Add(right);
+		if(bottom != null) cells.Add(bottom);
 		return cells;
 	}
 	/*--------------------------------------------------------------------------*/

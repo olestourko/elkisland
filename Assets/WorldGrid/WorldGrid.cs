@@ -23,10 +23,8 @@ public class WorldGrid : MonoBehaviour {
 	
 	void Start () 
 	{
-		//Chunk chunk = generateChunk();
-		//chunks[50, 50] = chunk;
-		generate();
-		generatePath();
+		//generate();
+		//generatePath();
 	}
 	
 	void FixedUpdate () 
@@ -54,24 +52,25 @@ public class WorldGrid : MonoBehaviour {
 		chunks[_i, _j] = chunk;
 		
 		/*Setup chunk relations*/
+		//Right chunk
 		if(chunks[_i+1, _j] != null)
 		{
 			chunk.right = chunks[_i+1, _j];
 			chunks[_i+1, _j].left = chunk;
 		}
-		
+		//Left chunk
 		if(chunks[_i-1, _j] != null)
 		{
 			chunk.left = chunks[_i-1, _j];
 			chunks[_i-1, _j].right = chunk;
 		}
-		
+		//Bottom chunk
 		if(chunks[_i, _j-1] != null)
 		{
 			chunk.bottom = chunks[_i, _j-1];
 			chunks[_i, _j-1].top = chunk;
 		}
-		
+		//Top chunk
 		if(chunks[_i, _j+1] != null)
 		{
 			chunk.top = chunks[_i, _j+1];
@@ -107,10 +106,10 @@ public class WorldGrid : MonoBehaviour {
 		{
 			for(int j = 0; j < size; j++)
 			{
-				if(i-1 >= 0) cells[i][j].next_left = cells[i-1][j];
-				if(i+1 < size) cells[i][j].next_right = cells[i+1][j];
-				if(j-1 >= 0) cells[i][j].next_bottom = cells[i][j-1];
-				if(j+1 < size) cells[i][j].next_top = cells[i][j+1];
+				if(i-1 >= 0) cells[i][j].left = cells[i-1][j];
+				if(i+1 < size) cells[i][j].right = cells[i+1][j];
+				if(j-1 >= 0) cells[i][j].bottom = cells[i][j-1];
+				if(j+1 < size) cells[i][j].top = cells[i][j+1];
 			}
 		}
 	}
@@ -184,10 +183,28 @@ public class WorldGrid : MonoBehaviour {
 			path.Add (current);
 			current = prev[current];
 		}
-		Debug.Log("Path generated");
 		foreach(Cell cell in path)
 		{
 			cell.setType(Cell.CellType.Path);
 		}
+	}
+	
+	private List<Cell> getAllChunkCells()
+	{
+		List<Cell> cells = new List<Cell>();
+		for(int i = 0; i < 100; i++)
+		{
+			for(int j = 0; j < 100; j++)
+			{
+				if(chunks[i, j] != null)
+				{
+					foreach(Cell cell in chunks[i,j].getCells())
+					{
+						cells.Add(cell);	
+					}
+				}
+			}			
+		}
+		return cells;
 	}
 }
