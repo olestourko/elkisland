@@ -29,12 +29,54 @@ public class WorldGrid : MonoBehaviour {
 	
 	void FixedUpdate () 
 	{
+		/*--------------------------------------------------------------------------*/
+		/*Chunk Generation					               							*/
+		/*--------------------------------------------------------------------------*/
 		int i = (int)Mathf.Floor(prescence.transform.position.x / 5) + 50;
 		int j = (int)Mathf.Floor(prescence.transform.position.z / 5) + 50;
+		/*Generate center and adjacent chunks*/
+		bool generatedChunk = false;
 		if(chunks[i, j] == null) 
 		{
 			Chunk chunk = generateChunk(i, j);
-			generatePath();
+			generatedChunk = true;
+		}
+		if(chunks[i-1, j] == null)
+		{
+			generateChunk (i-1, j);
+			generatedChunk = true;
+		}
+		if(chunks[i+1, j] == null)
+		{
+			generateChunk (i+1, j);
+			generatedChunk = true;
+		}
+		if(chunks[i, j-1] == null)
+		{
+			generateChunk (i, j-1);
+			generatedChunk = true;
+		}
+		if(chunks[i, j+1] == null)
+		{
+			generateChunk (i, j+1);
+			generatedChunk = true;
+		}
+		if(generatedChunk) generatePath();
+		/*--------------------------------------------------------------------------*/
+		/*Chunk set Active/Inactive				           							*/
+		/*--------------------------------------------------------------------------*/
+		List<Chunk> chunksList = getChunks();
+		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
+		foreach(Chunk chunk in chunksList)
+		{
+			if(Vector3.Distance(chunk.transform.position, pos_prescence) > 20.0f)
+			{
+				chunk.isActive = false;
+			}
+			else
+			{
+				chunk.isActive = true;	
+			}
 		}
 	}
 	
@@ -78,6 +120,19 @@ public class WorldGrid : MonoBehaviour {
 			chunks[_i, _j+1].bottom = chunk;
 		}
 		return chunk;
+	}
+	
+	private List<Chunk> getChunks()
+	{
+		List<Chunk> chunksOut = new List<Chunk>();
+		for(int i = 0; i < 100; i++)
+		{
+			for(int j = 0; j < 100; j++)
+			{
+				if(chunks[i, j] != null) chunksOut.Add(chunks[i, j]);	
+			}
+		}
+		return chunksOut;
 	}
 	
 	/*--------------------------------------------------------------------------*/

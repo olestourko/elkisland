@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class Chunk : MonoBehaviour {
 	
+	public bool isActive = true;
+	
 	public Cell cellPrefab;
 	private GUIText label;
 	
@@ -32,10 +34,13 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		label.text = name;
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), Color.blue);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), Color.blue);
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), Color.blue);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), Color.blue);
+		Color c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+		if(isActive) c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+		
+		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
+		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), c);
+		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), c);
+		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), c);
 	}
 	
 	public void generate()
