@@ -10,20 +10,76 @@ public class WorldGrid : MonoBehaviour {
 	Dictionary<Cell, int> dist;
 	Dictionary<Cell, Cell> prev;
 	/*--------------------------------------------------------------------------*/
-	
 	public Cell cellPrefab;
 	public int size;
 	private List<List<Cell>> cells = new List<List<Cell>>();
+	/*--------------------------------------------------------------------------*/
+	/*Chunks								           							*/
+	/*--------------------------------------------------------------------------*/
+	public Chunk chunkPrefab;
+	public Chunk[,] chunks = new Chunk[100, 100];
+	public GameObject prescence;
+	/*--------------------------------------------------------------------------*/
 	
 	void Start () 
 	{
+		//Chunk chunk = generateChunk();
+		//chunks[50, 50] = chunk;
 		generate();
 		generatePath();
-		//generatePath();
 	}
 	
-	void Update () {}
+	void FixedUpdate () 
+	{
+		int i = (int)Mathf.Floor(prescence.transform.position.x / 5) + 50;
+		int j = (int)Mathf.Floor(prescence.transform.position.z / 5) + 50;
+		if(chunks[i, j] == null) 
+		{
+			Chunk chunk = generateChunk(i, j);
+		}
+	}
 	
+	public Chunk generateChunk()
+	{
+		Chunk chunk = Instantiate(chunkPrefab) as Chunk;
+		chunk.transform.parent = this.transform;
+		chunk.transform.position = this.transform.position;
+		chunk.name = "chunk";
+		return chunk;
+	}
+	public Chunk generateChunk(int _i, int _j)
+	{
+		Chunk chunk = generateChunk();
+		chunk.transform.position = new Vector3((_i - 50.0f)  * 5.0f, 0.0f, (_j - 50.0f) * 5.0f);
+		chunks[_i, _j] = chunk;
+		
+		/*Setup chunk relations*/
+		if(chunks[_i+1, _j] != null)
+		{
+			chunk.right = chunks[_i+1, _j];
+			chunks[_i+1, _j].left = chunk;
+		}
+		
+		if(chunks[_i-1, _j] != null)
+		{
+			chunk.left = chunks[_i-1, _j];
+			chunks[_i-1, _j].right = chunk;
+		}
+		
+		if(chunks[_i, _j-1] != null)
+		{
+			chunk.bottom = chunks[_i, _j-1];
+			chunks[_i, _j-1].top = chunk;
+		}
+		
+		if(chunks[_i, _j+1] != null)
+		{
+			chunk.top = chunks[_i, _j+1];
+			chunks[_i, _j+1].bottom = chunk;
+		}
+		return chunk;
+	}
+
 	public void generate()
 	{
 		int x_offset = -(size / 2);
