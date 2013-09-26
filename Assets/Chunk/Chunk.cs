@@ -32,10 +32,10 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		label.text = name;
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), Color.red);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), Color.red);
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), Color.red);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), Color.red);
+		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), Color.blue);
+		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), Color.blue);
+		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), Color.blue);
+		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), Color.blue);
 	}
 	
 	public void generate()
@@ -47,9 +47,13 @@ public class Chunk : MonoBehaviour {
 			{
 				Cell cell = Instantiate(cellPrefab) as Cell;
 				cells[i, j] = cell;
-				cell.name = i + ", " + j + "";
 				cell.transform.parent = this.transform;
 				cell.transform.position = transform.position + new Vector3(i, 0, j);
+				cell.cost = Random.Range(1, 4);
+				cell.name = cell.cost + "";
+				float c = (float)cell.cost/3;
+				cell.renderer.material.color = new Color(c, c, c);
+				
 			}			
 		}
 		
@@ -84,7 +88,6 @@ public class Chunk : MonoBehaviour {
 	{
 		if(left != null)
 		{
-			Debug.Log ("Linking left");
 			for(int i = 0; i <5; i++) 
 			{
 				cells[0, i].left = left.cells[4, i];
@@ -93,7 +96,6 @@ public class Chunk : MonoBehaviour {
 		}
 		if(right != null)
 		{
-			Debug.Log ("Linking right");
 			for(int i = 0; i <5; i++) 
 			{
 				cells[4, i].right = right.cells[0, i];
@@ -102,7 +104,6 @@ public class Chunk : MonoBehaviour {
 		}
 		if(top != null)
 		{
-			Debug.Log ("Linking top");
 			for(int i = 0; i <5; i++) 
 			{
 				cells[i, 4].top = top.cells[i, 0];
@@ -111,7 +112,6 @@ public class Chunk : MonoBehaviour {
 		}
 		if(bottom != null)
 		{
-			Debug.Log ("Linking bottom");
 			for(int i = 0; i <5; i++) 
 			{
 				cells[i, 0].bottom = bottom.cells[i, 4];

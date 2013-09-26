@@ -34,6 +34,7 @@ public class WorldGrid : MonoBehaviour {
 		if(chunks[i, j] == null) 
 		{
 			Chunk chunk = generateChunk(i, j);
+			generatePath();
 		}
 	}
 	
@@ -78,8 +79,11 @@ public class WorldGrid : MonoBehaviour {
 		}
 		return chunk;
 	}
-
-	public void generate()
+	
+	/*--------------------------------------------------------------------------*/
+	/*Generate fixed region (testing)               							*/
+	/*--------------------------------------------------------------------------*/	
+	public void generate_Fixed()
 	{
 		int x_offset = -(size / 2);
 		int z_offset = -(size / 2);
@@ -94,8 +98,6 @@ public class WorldGrid : MonoBehaviour {
 				cells[i].Add(cell);
 				cell.cost = Random.Range(1, 4);
 				cell.name = cell.cost + "";
-				//cell.name = (i * size) + j + "";
-				
 				float c = (float)cell.cost/3;
 				cell.renderer.material.color = new Color(c, c, c);
 			}
@@ -113,25 +115,47 @@ public class WorldGrid : MonoBehaviour {
 			}
 		}
 	}
+	/*--------------------------------------------------------------------------*/	
+	
 	
 	private void generatePath()
 	{
-		Cell start = cells[0][0];
-		Cell end = cells[size-1][size-1];
+		//Cell start = cells[0][0];
+		//Cell end = cells[size-1][size-1];
 		//Cell start = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
 		//Cell end = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
-		start.setType(Cell.CellType.Path);
-		end.setType(Cell.CellType.Path);
-		dijkstra_FindPath(start, end);	
+		List<Cell> cells = getAllChunkCells();
+		List<Cell> removeCells = new List<Cell>();
+		foreach(Cell cell in cells)
+		{
+			if(cell == null) removeCells.Add(cell);	
+		}
+		foreach(Cell cell in removeCells) cells.Remove(cell);
+	
+		Cell start = cells[0];
+		Cell end = cells[cells.Count - 1];
+		
+		if(start != null && end != null)
+		{
+			start.setType(Cell.CellType.Path);
+			end.setType(Cell.CellType.Path);
+			dijkstra_FindPath(cells, start, end);
+		}
 	}
 	
-	private void dijkstra_FindPath(Cell _start, Cell _end)
+	private void dijkstra_FindPath(List<Cell> _graph, Cell _start, Cell _end)
 	{
 		Q = new List<Cell>();
+		foreach(Cell cell in _graph)
+		{
+			Q.Add(cell);	
+		}
+		
 		dist = new Dictionary<Cell, int>();
 		prev = new Dictionary<Cell, Cell>();
 		
 		/*Reset cell distances to infinity and previous to null*/ 
+		/*
 		for(int i = 0; i < size; i++)
 		{
 			for(int j = 0; j < size; j++)
@@ -141,6 +165,13 @@ public class WorldGrid : MonoBehaviour {
 				prev.Add (cells[i][j], null);
 			}			
 		}
+		*/	
+		foreach(Cell cell in Q)
+		{
+				dist.Add (cell, 65536);
+				prev.Add (cell, null);
+		}
+		
 		dist[_start] = 0;
 		prev[_start] = _start;
 		
@@ -170,11 +201,12 @@ public class WorldGrid : MonoBehaviour {
 
 			}
 		}
-		
+		/*
 		foreach(Cell cell in dist.Keys)
 		{
 			Debug.Log (cell.name + " - " + dist[cell] + " via " + prev[cell].name);
 		}
+		*/
 		/*Generate path*/
 		List<Cell> path = new List<Cell>();
 		Cell current = prev[_end];
@@ -183,6 +215,14 @@ public class WorldGrid : MonoBehaviour {
 			path.Add (current);
 			current = prev[current];
 		}
+		
+		//Reset all blocks		
+		foreach(Cell cell in _graph)
+		{
+			float c = (float)cell.cost/3;
+			cell.renderer.material.color = new Color(c, c, c);	
+		}
+
 		foreach(Cell cell in path)
 		{
 			cell.setType(Cell.CellType.Path);
