@@ -5,30 +5,29 @@ using System.Collections.Generic;
 public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
-	
+
 	public Cell cellPrefab;
 	private GUIText label;
 	
 	Cell[,] cells = new Cell[5,5];
-	
 	public Chunk left;
 	public Chunk top;
 	public Chunk right;
 	public Chunk bottom;
 	
-	public enum Side
-	{
-		Left,
-		Top,
-		Right,
-		Bottom
-	}
+	/*Event firing when chunk is init'd*/
+	public event InitHandler Init;
+	public delegate void InitHandler(Chunk _chunk);
+	
 	
 	// Use this for initialization
 	void Start () {
+		Debug.Log (name + ": Start");
 		label = this.transform.GetChild(0).gameObject.guiText;
 		generate();
-		link();
+		//link();		//Call moved to WorldGrid (since other chunks may not have loaded
+		Init(this);
+		Debug.Log (name + ": Done Start");
 	}
 	
 	// Update is called once per frame
@@ -86,6 +85,15 @@ public class Chunk : MonoBehaviour {
 			}			
 		}
 		return cells_out;
+	}
+	
+	public void makeActive()
+	{
+		gameObject.SetActive(true);
+	}
+	public void makeInactive()
+	{
+		gameObject.SetActive(false);
 	}
 	
 	/*Link cells between chunks*/

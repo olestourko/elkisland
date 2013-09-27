@@ -18,6 +18,7 @@ public class WorldGrid : MonoBehaviour {
 	/*--------------------------------------------------------------------------*/
 	public Chunk chunkPrefab;
 	public Chunk[,] chunks = new Chunk[100, 100];
+	public List<Chunk> pendingChunks = new List<Chunk>();
 	public GameObject prescence;
 	/*--------------------------------------------------------------------------*/
 	
@@ -38,7 +39,7 @@ public class WorldGrid : MonoBehaviour {
 		bool generatedChunk = false;
 		if(chunks[i, j] == null) 
 		{
-			Chunk chunk = generateChunk(i, j);
+			generateChunk(i, j);
 			generatedChunk = true;
 		}
 		if(chunks[i-1, j] == null)
@@ -61,7 +62,7 @@ public class WorldGrid : MonoBehaviour {
 			generateChunk (i, j+1);
 			generatedChunk = true;
 		}
-		if(generatedChunk) generatePath();
+		//if(generatedChunk) generatePath();
 		/*--------------------------------------------------------------------------*/
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
@@ -71,30 +72,25 @@ public class WorldGrid : MonoBehaviour {
 		{
 			if(Vector3.Distance(chunk.transform.position, pos_prescence) > 20.0f)
 			{
-				chunk.isActive = false;
+				chunk.makeInactive();
 			}
 			else
 			{
-				chunk.isActive = true;	
+				chunk.makeActive();	
 			}
 		}
 	}
 	
-	public Chunk generateChunk()
+	public Chunk generateChunk(int _i, int _j)
 	{
 		Chunk chunk = Instantiate(chunkPrefab) as Chunk;
 		chunk.transform.parent = this.transform;
 		chunk.transform.position = this.transform.position;
-		chunk.name = "chunk";
-		return chunk;
-	}
-	public Chunk generateChunk(int _i, int _j)
-	{
-		Chunk chunk = generateChunk();
+		chunk.name = "c " + _i + ", " + _j;
 		chunk.transform.position = new Vector3((_i - 50.0f)  * 5.0f, 0.0f, (_j - 50.0f) * 5.0f);
 		chunks[_i, _j] = chunk;
 		
-		/*Setup chunk relations*/
+		/*Link to adjacent chunks*/
 		//Right chunk
 		if(chunks[_i+1, _j] != null)
 		{
@@ -119,9 +115,24 @@ public class WorldGrid : MonoBehaviour {
 			chunk.top = chunks[_i, _j+1];
 			chunks[_i, _j+1].bottom = chunk;
 		}
+		chunk.Init += new Chunk.InitHandler(chunkInitListener);
+		pendingChunks.Add(chunk);
 		return chunk;
 	}
 	
+	private void chunkInitListener(Chunk _chunk)
+	{
+		//Debug.Log ("Chunk " + _chunk.name + " Init'd");
+		pendingChunks.Remove(_chunk);
+		Debug.Log (pendingChunks.Count);
+		if(pendingChunks.Count == 0)
+		{
+			Debug.Log("All chunks init'd");
+			foreach(Chunk chunk in getChunks()) chunk.link();
+			generatePath();
+		}
+	}
+			
 	private List<Chunk> getChunks()
 	{
 		List<Chunk> chunksOut = new List<Chunk>();
