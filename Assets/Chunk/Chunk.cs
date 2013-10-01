@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
-
+	
 	public Cell cellPrefab;
 	private GUIText label;
 	
@@ -22,12 +22,10 @@ public class Chunk : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		Debug.Log (name + ": Start");
 		label = this.transform.GetChild(0).gameObject.guiText;
 		generate();
 		//link();		//Call moved to WorldGrid (since other chunks may not have loaded
 		Init(this);
-		Debug.Log (name + ": Done Start");
 	}
 	
 	// Update is called once per frame
@@ -71,6 +69,22 @@ public class Chunk : MonoBehaviour {
 				if(j-1 >= 0) cells[i, j].bottom = cells[i, j-1];
 				if(j+1 < 5) cells[i, j].top = cells[i, j+1];
 			}
+		}
+	}
+	
+	public void regenerate()
+	{
+		for(int i = 0; i < 5; i++)
+		{
+			for(int j = 0; j < 5; j++)
+			{
+				Cell cell = cells[i, j];
+				cell.cost = Random.Range(1, 4);
+				cell.name = cell.cost + "";
+				float c = (float)cell.cost/3;
+				cell.renderer.material.color = new Color(c, c, c);
+				
+			}			
 		}
 	}
 	

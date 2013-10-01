@@ -120,11 +120,17 @@ public class WorldGrid : MonoBehaviour {
 		return chunk;
 	}
 	
+	public void regenerateChunk(int _i, int _j)
+	{
+		if(chunks[_i, _j] == null) return;
+		chunks[_i, _j].regenerate();
+		generatePath();
+	}
+
 	private void chunkInitListener(Chunk _chunk)
 	{
 		//Debug.Log ("Chunk " + _chunk.name + " Init'd");
 		pendingChunks.Remove(_chunk);
-		Debug.Log (pendingChunks.Count);
 		if(pendingChunks.Count == 0)
 		{
 			Debug.Log("All chunks init'd");
@@ -144,45 +150,7 @@ public class WorldGrid : MonoBehaviour {
 			}
 		}
 		return chunksOut;
-	}
-	
-	/*--------------------------------------------------------------------------*/
-	/*Generate fixed region (testing)               							*/
-	/*--------------------------------------------------------------------------*/	
-	public void generate_Fixed()
-	{
-		int x_offset = -(size / 2);
-		int z_offset = -(size / 2);
-		for(int i = 0; i < size; i++)
-		{
-			cells.Add(new List<Cell>());
-			for(int j = 0; j < size; j++)
-			{
-				Cell cell = Instantiate(cellPrefab) as Cell;
-				cell.transform.parent = this.transform;
-				cell.transform.position = new Vector3(x_offset + i, 0, z_offset + j);
-				cells[i].Add(cell);
-				cell.cost = Random.Range(1, 4);
-				cell.name = cell.cost + "";
-				float c = (float)cell.cost/3;
-				cell.renderer.material.color = new Color(c, c, c);
-			}
-		}
-		
-		/*Link the cells*/
-		for(int i = 0; i < size; i++)
-		{
-			for(int j = 0; j < size; j++)
-			{
-				if(i-1 >= 0) cells[i][j].left = cells[i-1][j];
-				if(i+1 < size) cells[i][j].right = cells[i+1][j];
-				if(j-1 >= 0) cells[i][j].bottom = cells[i][j-1];
-				if(j+1 < size) cells[i][j].top = cells[i][j+1];
-			}
-		}
-	}
-	/*--------------------------------------------------------------------------*/	
-	
+	}	
 	
 	private void generatePath()
 	{
@@ -191,13 +159,6 @@ public class WorldGrid : MonoBehaviour {
 		//Cell start = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
 		//Cell end = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
 		List<Cell> cells = getAllChunkCells();
-		List<Cell> removeCells = new List<Cell>();
-		foreach(Cell cell in cells)
-		{
-			if(cell == null) removeCells.Add(cell);	
-		}
-		foreach(Cell cell in removeCells) cells.Remove(cell);
-	
 		Cell start = cells[0];
 		Cell end = cells[cells.Count - 1];
 		
@@ -274,25 +235,34 @@ public class WorldGrid : MonoBehaviour {
 		}
 		*/
 		/*Generate path*/
-		List<Cell> path = new List<Cell>();
 		Cell current = prev[_end];
+		Path pathObject = new Path();
 		while (current != _start)
 		{
-			path.Add (current);
+			pathObject.addCell(current);
 			current = prev[current];
 		}
-		
-		//Reset all blocks		
-		foreach(Cell cell in _graph)
+		applyPath (pathObject);
+		Debug.Log ("Path created (length " + pathObject.getLength() + ")");
+	}
+	
+	private void applyPath(Path _path)
+	{
+		//Reset the blocks
+		foreach(Cell cell in getAllChunkCells())
 		{
 			float c = (float)cell.cost/3;
 			cell.renderer.material.color = new Color(c, c, c);	
 		}
-
-		foreach(Cell cell in path)
+		foreach(Cell cell in _path.getCells())
 		{
 			cell.setType(Cell.CellType.Path);
 		}
+		
+		/* For each chunk where in which a cell from the path is within it, 
+		 * apply the path to that cell. The chunk will create its own internal
+		 * path object which will be used in region regeneration.
+		 */
 	}
 	
 	private List<Cell> getAllChunkCells()
