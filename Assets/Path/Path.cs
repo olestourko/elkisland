@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class Path {
 	
 	private List<Cell> cells = new List<Cell>();
+	public Path partOf;
 	// Use this for initialization
 	public Path()
 	{

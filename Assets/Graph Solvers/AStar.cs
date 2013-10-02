@@ -41,7 +41,7 @@ public class AStar
 			foreach(Cell adjacent in current.getNeighbors())
 			{
 				float tentative_g = current.g + adjacent.cost;
-				float tentative_f = tentative_g + Distance(adjacent, _end) * 1.3f;
+				float tentative_f = tentative_g + Distance(adjacent, _end) * 2.0f;
 				
 				//if(closed.Contains(adjacent) && tentative_f >= adjacent.f) continue;
 				if(closed.Contains(adjacent)) continue;

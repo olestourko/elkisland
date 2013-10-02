@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
+	public bool selected = false;
 	
 	public Cell cellPrefab;
 	private GUIText label;
@@ -31,13 +32,35 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		label.text = name;
-		Color c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-		if(isActive) c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-		
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), c);
-		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), c);
-		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), c);
+		Color c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+		if(isActive) c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+		/*
+		if(selected)
+		{
+			Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
+			Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), c);
+			Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), c);
+			Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(0f, 0f, 0f), c);
+		}
+		*/
+	}
+	
+	public void Select()
+	{
+		selected = true;
+		foreach(Cell cell in getCells())
+		{
+			cell.Select();	
+		}
+	}
+	
+	public void Deselect()
+	{
+		selected = false;
+		foreach(Cell cell in getCells())
+		{
+			cell.Deselect();
+		}
 	}
 	
 	public void generate()
@@ -51,7 +74,7 @@ public class Chunk : MonoBehaviour {
 				cells[i, j] = cell;
 				cell.transform.parent = this.transform;
 				cell.transform.position = transform.position + new Vector3(i, 0, j);
-				cell.cost = Random.Range(1, 3);
+				cell.cost = Random.Range(1, 4);
 				//cell.cost = 1;
 				cell.name = cell.cost + "";
 				float c = (float)cell.cost/3;
@@ -94,6 +117,7 @@ public class Chunk : MonoBehaviour {
 	{
 		bool onPath = false;
 		Path localPath = new Path();
+		localPath.partOf = _path;
 		foreach(Cell cell in _path.getCells())
 		{
 			//Is this the first cell within the chunk for this path?

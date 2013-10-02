@@ -23,6 +23,6 @@ public class Movement : MonoBehaviour {
 		else if(Input.GetKey(KeyCode.RightArrow)) transform.position += Vector3.right * factor;
 		
 		if(Input.GetKey(KeyCode.PageUp) && transform.position.y >= 1.0f) transform.position -= Vector3.up * factor;
-		else if(Input.GetKey(KeyCode.PageDown) && transform.position.y <= 50.0f) transform.position += Vector3.up * factor;
+		else if(Input.GetKey(KeyCode.PageDown) && transform.position.y <= 60.0f) transform.position += Vector3.up * factor;
 	}
 }

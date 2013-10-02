@@ -12,9 +12,14 @@ public class WorldGrid : MonoBehaviour {
 	public float drawDistance = 30.0f;
 	public Chunk chunkPrefab;
 	public Chunk[,] chunks = new Chunk[100, 100];
+	//These are used to speed up generation and loading
 	public List<Chunk> chunks_list = new List<Chunk>();
+	//public List<Cell> chunkCells = new List<Cell>();
 	public List<Chunk> pendingChunks = new List<Chunk>();
 	public GameObject prescence;
+
+	//GUI
+	gui gui;
 	
 	//Kernel must be odd x odd
 	public int[,] kernel = 
@@ -26,11 +31,13 @@ public class WorldGrid : MonoBehaviour {
 		{0, 0, 1, 0, 0}
 	};
 	
+	private Region selectedRegion;
+	
 	/*--------------------------------------------------------------------------*/
 	
 	void Start () 
 	{
-
+		gui = GameObject.Find("gui").GetComponent("gui") as gui;
 	}
 	
 	void FixedUpdate () 
@@ -80,6 +87,7 @@ public class WorldGrid : MonoBehaviour {
 		chunk.name = "c " + _i + ", " + _j;
 		chunk.transform.position = new Vector3((_i - 50.0f)  * 5.0f, 0.0f, (_j - 50.0f) * 5.0f);
 		chunks[_i, _j] = chunk;
+		
 		chunks_list.Add(chunk);
 		
 		/*Link to adjacent chunks*/
@@ -130,21 +138,65 @@ public class WorldGrid : MonoBehaviour {
 				}
 			}
 		}
-		
-		//if(chunks[_i, _j] == null) return;
 		generatePath();
 	}
-
+	
+	
+	/*--------------------------------------------------------------------------*/
+	/*Region Actions					               							*/
+	/*--------------------------------------------------------------------------*/
+	public void SelectRegion(int _x, int _z)
+	{
+		DeselectRegion();
+		Region region = new Region();
+		List<Chunk> chunks_in_region = new List<Chunk>();
+		int i = _x;
+		int j = _z;
+		for(int k = -2; k <= 2; k++)
+		{
+			for(int l = -2; l <= 2; l++)
+			{
+				if(kernel[k+2, l+2] == 1)
+				{
+					if(chunks[i + k, j + l] != null)
+					{
+						chunks_in_region.Add(chunks[i + k, j + l]);
+						region.AddChunk(chunks[i + k, j + l]);
+					}
+				}
+			}
+		}
+		selectedRegion = region;
+		region.Select();
+	}
+	
+	public void DeselectRegion()
+	{
+		if(selectedRegion == null) return;
+		selectedRegion.Deselect();
+	}
+	
+	public void RepathRegion()
+	{
+		if(selectedRegion == null) return;
+		selectedRegion.Repath();
+	}
+	
+	/*--------------------------------------------------------------------------*/
+	
+	
 	private void chunkInitListener(Chunk _chunk)
 	{
 		//Debug.Log ("Chunk " + _chunk.name + " Init'd");
 		pendingChunks.Remove(_chunk);
+		//foreach(Cell cell in _chunk.getCells()) chunkCells.Add(cell);
 		if(pendingChunks.Count == 0)
 		{
 			foreach(Chunk chunk in chunks_list) chunk.link();
 			generatePath();
 		}
-		Debug.Log ("There are " + chunks_list.Count * 25 + " cells.");
+		gui.chunk_count = chunks_list.Count;
+		gui.cell_count = chunks_list.Count * 5;
 	}
 	
 	private void generatePath()
@@ -169,11 +221,7 @@ public class WorldGrid : MonoBehaviour {
 		//Reset the blocks
 		foreach(Cell cell in getAllChunkCells())
 		{
-			if(!cell.selected)
-			{
-				float c = (float)cell.cost/3;
-				cell.renderer.material.color = new Color(c, c, c);
-			}
+			cell.setType(Cell.CellType.Woods);
 		}
 		foreach(Cell cell in _path.getCells())
 		{
@@ -190,6 +238,7 @@ public class WorldGrid : MonoBehaviour {
 		 */
 	}
 	
+	/*Deprecated*/
 	private List<Cell> getAllChunkCells()
 	{
 		List<Cell> cells_out = new List<Cell>();
@@ -202,4 +251,5 @@ public class WorldGrid : MonoBehaviour {
 		}
 		return cells_out;
 	}
+	
 }

@@ -5,6 +5,9 @@ using System.Collections.Generic;
 public class Cell : MonoBehaviour {
 	
 	public bool selected = false;
+	private Color originalColor = Color.white;
+	
+	public CellType cellType;
 	public enum CellType
 	{
 		None,
@@ -56,10 +59,49 @@ public class Cell : MonoBehaviour {
 	
 	public void setType(CellType _type)
 	{
-		if(_type == CellType.Path) renderer.material.color = Color.red;
-		else if(_type == CellType.Woods) renderer.material.color = Color.grey;
-		else if(_type == CellType.Selected) renderer.material.color = Color.magenta;
-		else if(_type == CellType.Path_Start) renderer.material.color = Color.blue;
-		else if(_type == CellType.Path_End) renderer.material.color = Color.yellow;
+		cellType = _type;
+		Color c = Color.white;
+		if(_type == CellType.Path) c = Color.red;
+		else if(_type == CellType.Woods) c = Color.white;
+		else if(_type == CellType.Selected) c = Color.magenta;
+		else if(_type == CellType.Path_Start) c = Color.blue;
+		else if(_type == CellType.Path_End) c = Color.yellow;
+		
+		if(cellType == CellType.Woods)
+		{
+			float w = (float)cost/3;
+			c.r *= w;
+			c.g *= w;
+			c.b *= w;
+		}
+		
+		originalColor = c;
+		if(selected)
+		{
+			c.r *= 0.5f;
+			c.g *= 0.5f;
+			c.b *= 0.5f;
+			c.g += 0.25f;
+		}
+		renderer.material.color = c;
+	}
+	
+	public void Select()
+	{
+		if(selected) return;
+		selected = true;
+		originalColor = renderer.material.color;
+		Color c = renderer.material.color;
+		c.r *= 0.5f;
+		c.g *= 0.5f;
+		c.b *= 0.5f;
+		c.g += 0.25f;
+		renderer.material.color = c;
+	}
+	
+	public void Deselect()
+	{
+		selected = false;
+		renderer.material.color = originalColor;	
 	}
 }

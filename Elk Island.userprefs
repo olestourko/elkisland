@@ -1,17 +1,38 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Graph Solvers\AStar.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Chunk\Chunk.cs">
     <Files>
-      <File FileName="Assets\Chunk\Chunk.cs" Line="91" Column="2" />
-      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="1" Column="1" />
+      <File FileName="Assets\Graph Solvers\AStar.cs" Line="41" Column="28" />
+      <File FileName="Assets\Chunk\Chunk.cs" Line="175" Column="1" />
       <File FileName="Assets\textLabel.cs" Line="1" Column="1" />
-      <File FileName="Assets\Camera\Movement.cs" Line="1" Column="1" />
-      <File FileName="Assets\Cell\Cell.cs" Line="25" Column="18" />
+      <File FileName="Assets\Camera\Movement.cs" Line="26" Column="71" />
+      <File FileName="Assets\Cell\Cell.cs" Line="23" Column="2" />
       <File FileName="Assets\Path\Path.cs" Line="1" Column="1" />
-      <File FileName="Assets\GUI\gui.cs" Line="1" Column="1" />
-      <File FileName="Assets\Graph Solvers\AStar.cs" Line="53" Column="12" />
-      <File FileName="Assets\Graph Solvers\Dijkstra.cs" Line="13" Column="3" />
+      <File FileName="Assets\GUI\gui.cs" Line="13" Column="2" />
+      <File FileName="Assets\Graph Solvers\Dijkstra.cs" Line="1" Column="1" />
+      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="155" Column="42" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Assembly-CSharp" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="Camera" expanded="True" />
+              <Node name="Cell" expanded="True" />
+              <Node name="Chunk" expanded="True">
+                <Node name="Chunk.cs" selected="True" />
+              </Node>
+              <Node name="Graph Solvers" expanded="True" />
+              <Node name="GUI" expanded="True" />
+              <Node name="WorldGrid" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
