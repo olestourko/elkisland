@@ -31,6 +31,19 @@ public class Path {
 		return cells[cells.Count - 1];
 	}
 	
+	public Cell getNext(Cell _cell)
+	{
+		if(cells.Contains(_cell))
+		{
+			int i = cells.IndexOf(_cell);
+			if(i+1 < cells.Count)
+			{
+				return cells[i+1];	
+			}
+		}
+		return null;
+	}
+	
 	public int getLength()
 	{
 		return cells.Count;	

@@ -32,7 +32,7 @@ public class Chunk : MonoBehaviour {
 	void Update () {
 		label.text = name;
 		Color c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-		if(isActive) c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
+		if(isActive) c = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 		
 		Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
 		Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), c);
@@ -72,6 +72,7 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 	
+	//To be merged with generate()
 	public void regenerate()
 	{
 		for(int i = 0; i < 5; i++)
@@ -88,6 +89,34 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 	
+	public void applyPath(Path _path)
+	{
+		bool onPath = false;
+		Path localPath = new Path();
+		foreach(Cell cell in _path.getCells())
+		{
+			//Is this the first cell within the chunk for this path?
+			//Is the next cell in the path outside of the chunk (or non-existent?)
+			if(this.hasCell(cell))
+			{
+				if(!onPath)
+				{
+					cell.setType(Cell.CellType.Path_Start);
+					localPath = new Path();
+					onPath = true;
+				}
+				if(!this.hasCell(_path.getNext(cell)))
+				{
+					cell.setType(Cell.CellType.Path_End);
+					onPath = false;
+					//Debug.Log ("A path runs through chunk " + name);	
+				}
+				localPath.addCell(cell);
+			}
+				
+		}
+	}
+	
 	public List<Cell> getCells()
 	{
 		List<Cell> cells_out = new List<Cell>();
@@ -99,6 +128,19 @@ public class Chunk : MonoBehaviour {
 			}			
 		}
 		return cells_out;
+	}
+	
+	public bool hasCell(Cell _cell)
+	{
+		if(_cell == null) return false;
+		for(int i = 0; i < 5; i++)
+		{
+			for(int j = 0; j < 5; j++)
+			{
+				if(cells[i, j] == _cell) return true;
+			}			
+		}
+		return false;
 	}
 	
 	public void makeActive()

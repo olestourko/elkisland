@@ -8,6 +8,8 @@ public class Cell : MonoBehaviour {
 	{
 		None,
 		Path,
+		Path_Start,
+		Path_End,
 		Woods,
 		Selected
 	}
@@ -50,5 +52,7 @@ public class Cell : MonoBehaviour {
 		if(_type == CellType.Path) renderer.material.color = Color.red;
 		else if(_type == CellType.Woods) renderer.material.color = Color.grey;
 		else if(_type == CellType.Selected) renderer.material.color = Color.magenta;
+		else if(_type == CellType.Path_Start) renderer.material.color = Color.blue;
+		else if(_type == CellType.Path_End) renderer.material.color = Color.yellow;
 	}
 }

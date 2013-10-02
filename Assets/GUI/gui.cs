@@ -32,12 +32,12 @@ public class gui : MonoBehaviour {
 		{
 			//Space after command isn't taken into account
 			string content = terminalString.Substring(5, terminalString.Length - 5);
-			//Debug.Log("Command: " + terminalString.Substring(0, 5));
-			//Debug.Log("Content: " + content);
 			content = content.Substring(1, content.Length - 1);
 			string xString = "";
 			string zString= "";
+			string sizeString = "";
 			int i = 0;
+			//Get x
 			while(true)
 			{
 				if(i > content.Length-1) break;
@@ -46,16 +46,29 @@ public class gui : MonoBehaviour {
 				i++;
 			}
 			i++;
+			i++;
+			//Get y
 			while(true)
 			{
 				if(i > content.Length-1) break;
+				if(content[i] == ' ') break;
 				zString += content[i];
 				i++;
 			}
+			//Get size
+			i++;
+			while(true)
+			{
+				if(i > content.Length-1) break;
+				sizeString += content[i];
+				i++;
+			}
+			
 			int x = int.Parse(xString);
 			int z = int.Parse(zString);
 			Debug.Log(x);
 			Debug.Log(z);
+			//Debug.Log(size);
 			worldGrid.regenerateChunk(x, z);
 		}
 	}

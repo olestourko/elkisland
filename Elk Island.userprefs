@@ -1,6 +1,17 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Chunk\Chunk.cs">
+    <Files>
+      <File FileName="Assets\Chunk\Chunk.cs" Line="95" Column="31" />
+      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="1" Column="1" />
+      <File FileName="Assets\textLabel.cs" Line="1" Column="1" />
+      <File FileName="Assets\Camera\Movement.cs" Line="1" Column="1" />
+      <File FileName="Assets\Cell\Cell.cs" Line="1" Column="1" />
+      <File FileName="Assets\Path\Path.cs" Line="1" Column="1" />
+      <File FileName="Assets\GUI\gui.cs" Line="1" Column="1" />
+      <File FileName="Assets\Graph Solvers\Dijkstra.cs" Line="18" Column="32" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

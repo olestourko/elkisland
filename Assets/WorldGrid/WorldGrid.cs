@@ -3,29 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class WorldGrid : MonoBehaviour {
-	/*--------------------------------------------------------------------------*/
-	/*Stuff for Dijkstra (to be moved)               							*/
-	/*--------------------------------------------------------------------------*/
-	List<Cell> Q;
-	Dictionary<Cell, int> dist;
-	Dictionary<Cell, Cell> prev;
-	/*--------------------------------------------------------------------------*/
 	public Cell cellPrefab;
 	public int size;
 	private List<List<Cell>> cells = new List<List<Cell>>();
 	/*--------------------------------------------------------------------------*/
 	/*Chunks								           							*/
 	/*--------------------------------------------------------------------------*/
+	public float drawDistance = 40.0f;
 	public Chunk chunkPrefab;
 	public Chunk[,] chunks = new Chunk[100, 100];
 	public List<Chunk> pendingChunks = new List<Chunk>();
 	public GameObject prescence;
+	
+	//Kernel must be odd x odd
+	public int[,] kernel = 
+	{
+		{0, 0, 1, 0, 0},
+		{0, 1, 1, 1, 0},
+		{1, 1, 1, 1, 1},
+		{0, 1, 1, 1, 0},
+		{0, 0, 1, 0, 0}
+	};
+	
 	/*--------------------------------------------------------------------------*/
 	
 	void Start () 
 	{
-		//generate();
-		//generatePath();
+
 	}
 	
 	void FixedUpdate () 
@@ -35,34 +39,21 @@ public class WorldGrid : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		int i = (int)Mathf.Floor(prescence.transform.position.x / 5) + 50;
 		int j = (int)Mathf.Floor(prescence.transform.position.z / 5) + 50;
-		/*Generate center and adjacent chunks*/
-		bool generatedChunk = false;
-		if(chunks[i, j] == null) 
+
+		for(int k = -2; k <= 2; k++)
 		{
-			generateChunk(i, j);
-			generatedChunk = true;
+			for(int l = -2; l <= 2; l++)
+			{
+				if(kernel[k+2, l+2] == 1)
+				{
+					if(chunks[i + k, j + l] == null)
+					{
+						generateChunk(i + k, j + l);
+					}
+				}
+			}
 		}
-		if(chunks[i-1, j] == null)
-		{
-			generateChunk (i-1, j);
-			generatedChunk = true;
-		}
-		if(chunks[i+1, j] == null)
-		{
-			generateChunk (i+1, j);
-			generatedChunk = true;
-		}
-		if(chunks[i, j-1] == null)
-		{
-			generateChunk (i, j-1);
-			generatedChunk = true;
-		}
-		if(chunks[i, j+1] == null)
-		{
-			generateChunk (i, j+1);
-			generatedChunk = true;
-		}
-		//if(generatedChunk) generatePath();
+		
 		/*--------------------------------------------------------------------------*/
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
@@ -70,7 +61,7 @@ public class WorldGrid : MonoBehaviour {
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
 		foreach(Chunk chunk in chunksList)
 		{
-			if(Vector3.Distance(chunk.transform.position, pos_prescence) > 20.0f)
+			if(Vector3.Distance(chunk.transform.position, pos_prescence) > drawDistance)
 			{
 				chunk.makeInactive();
 			}
@@ -115,6 +106,7 @@ public class WorldGrid : MonoBehaviour {
 			chunk.top = chunks[_i, _j+1];
 			chunks[_i, _j+1].bottom = chunk;
 		}
+		
 		chunk.Init += new Chunk.InitHandler(chunkInitListener);
 		pendingChunks.Add(chunk);
 		return chunk;
@@ -122,8 +114,23 @@ public class WorldGrid : MonoBehaviour {
 	
 	public void regenerateChunk(int _i, int _j)
 	{
-		if(chunks[_i, _j] == null) return;
-		chunks[_i, _j].regenerate();
+		int i = _i;
+		int j = _j;
+		for(int k = -2; k <= 2; k++)
+		{
+			for(int l = -2; l <= 2; l++)
+			{
+				if(kernel[k+2, l+2] == 1)
+				{
+					if(chunks[i + k, j + l] != null)
+					{
+						chunks[i + k, j + l].regenerate();
+					}
+				}
+			}
+		}
+		
+		//if(chunks[_i, _j] == null) return;
 		generatePath();
 	}
 
@@ -133,7 +140,6 @@ public class WorldGrid : MonoBehaviour {
 		pendingChunks.Remove(_chunk);
 		if(pendingChunks.Count == 0)
 		{
-			Debug.Log("All chunks init'd");
 			foreach(Chunk chunk in getChunks()) chunk.link();
 			generatePath();
 		}
@@ -154,98 +160,19 @@ public class WorldGrid : MonoBehaviour {
 	
 	private void generatePath()
 	{
-		//Cell start = cells[0][0];
-		//Cell end = cells[size-1][size-1];
-		//Cell start = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
-		//Cell end = cells[Random.Range(0, size-1)][Random.Range(0, size-1)];
 		List<Cell> cells = getAllChunkCells();
 		Cell start = cells[0];
 		Cell end = cells[cells.Count - 1];
+		//Cell start = cells[Random.Range(0, cells.Count-1)];
+		//Cell end = cells[Random.Range(0, cells.Count-1)];
+		start.setType(Cell.CellType.Path);
+		end.setType(Cell.CellType.Path);
 		
-		if(start != null && end != null)
-		{
-			start.setType(Cell.CellType.Path);
-			end.setType(Cell.CellType.Path);
-			dijkstra_FindPath(cells, start, end);
-		}
+		Dijkstra dijkstra = new Dijkstra();
+		Path path = dijkstra.solve(cells, start, end);
+		applyPath(path);
 	}
-	
-	private void dijkstra_FindPath(List<Cell> _graph, Cell _start, Cell _end)
-	{
-		Q = new List<Cell>();
-		foreach(Cell cell in _graph)
-		{
-			Q.Add(cell);	
-		}
 		
-		dist = new Dictionary<Cell, int>();
-		prev = new Dictionary<Cell, Cell>();
-		
-		/*Reset cell distances to infinity and previous to null*/ 
-		/*
-		for(int i = 0; i < size; i++)
-		{
-			for(int j = 0; j < size; j++)
-			{
-				Q.Add(cells[i][j]);
-				dist.Add(cells[i][j], 65536);
-				prev.Add (cells[i][j], null);
-			}			
-		}
-		*/	
-		foreach(Cell cell in Q)
-		{
-				dist.Add (cell, 65536);
-				prev.Add (cell, null);
-		}
-		
-		dist[_start] = 0;
-		prev[_start] = _start;
-		
-		while(Q.Count > 0)
-		{
-			/*Find the cell with the shortest distance in Q (this will be the starting cell at first)*/
-			Cell u = null;
-			foreach(Cell cell in Q)
-			{
-				if(u == null) u = cell;
-				else if(dist[u] > dist[cell]) u = cell;
-			}
-			Q.Remove(u);
-			//Debug.Log ("Removed " + u.name);
-			
-			foreach(Cell v in u.dijkstra_GetNeighbors())
-			{
-				if(Q.Contains(v)) 
-				{
-					int alt = dist[u] + v.cost;
-					if(alt < dist[v]) 
-					{
-						dist[v] = alt;
-						prev[v] = u;
-					}
-				}
-
-			}
-		}
-		/*
-		foreach(Cell cell in dist.Keys)
-		{
-			Debug.Log (cell.name + " - " + dist[cell] + " via " + prev[cell].name);
-		}
-		*/
-		/*Generate path*/
-		Cell current = prev[_end];
-		Path pathObject = new Path();
-		while (current != _start)
-		{
-			pathObject.addCell(current);
-			current = prev[current];
-		}
-		applyPath (pathObject);
-		Debug.Log ("Path created (length " + pathObject.getLength() + ")");
-	}
-	
 	private void applyPath(Path _path)
 	{
 		//Reset the blocks
@@ -257,6 +184,10 @@ public class WorldGrid : MonoBehaviour {
 		foreach(Cell cell in _path.getCells())
 		{
 			cell.setType(Cell.CellType.Path);
+		}
+		foreach(Chunk chunk in getChunks())
+		{
+			chunk.applyPath(_path);	
 		}
 		
 		/* For each chunk where in which a cell from the path is within it, 
