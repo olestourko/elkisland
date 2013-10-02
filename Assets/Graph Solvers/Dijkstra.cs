@@ -38,7 +38,7 @@ public class Dijkstra {
 				else if(dist[u] > dist[cell]) u = cell;
 			}
 			Q.Remove(u);			
-			foreach(Cell v in u.dijkstra_GetNeighbors())
+			foreach(Cell v in u.getNeighbors())
 			{
 				if(Q.Contains(v)) 
 				{

@@ -9,9 +9,10 @@ public class WorldGrid : MonoBehaviour {
 	/*--------------------------------------------------------------------------*/
 	/*Chunks								           							*/
 	/*--------------------------------------------------------------------------*/
-	public float drawDistance = 40.0f;
+	public float drawDistance = 30.0f;
 	public Chunk chunkPrefab;
 	public Chunk[,] chunks = new Chunk[100, 100];
+	public List<Chunk> chunks_list = new List<Chunk>();
 	public List<Chunk> pendingChunks = new List<Chunk>();
 	public GameObject prescence;
 	
@@ -57,9 +58,8 @@ public class WorldGrid : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
-		List<Chunk> chunksList = getChunks();
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
-		foreach(Chunk chunk in chunksList)
+		foreach(Chunk chunk in chunks_list)
 		{
 			if(Vector3.Distance(chunk.transform.position, pos_prescence) > drawDistance)
 			{
@@ -80,6 +80,7 @@ public class WorldGrid : MonoBehaviour {
 		chunk.name = "c " + _i + ", " + _j;
 		chunk.transform.position = new Vector3((_i - 50.0f)  * 5.0f, 0.0f, (_j - 50.0f) * 5.0f);
 		chunks[_i, _j] = chunk;
+		chunks_list.Add(chunk);
 		
 		/*Link to adjacent chunks*/
 		//Right chunk
@@ -140,36 +141,26 @@ public class WorldGrid : MonoBehaviour {
 		pendingChunks.Remove(_chunk);
 		if(pendingChunks.Count == 0)
 		{
-			foreach(Chunk chunk in getChunks()) chunk.link();
+			foreach(Chunk chunk in chunks_list) chunk.link();
 			generatePath();
 		}
+		Debug.Log ("There are " + chunks_list.Count * 25 + " cells.");
 	}
-			
-	private List<Chunk> getChunks()
-	{
-		List<Chunk> chunksOut = new List<Chunk>();
-		for(int i = 0; i < 100; i++)
-		{
-			for(int j = 0; j < 100; j++)
-			{
-				if(chunks[i, j] != null) chunksOut.Add(chunks[i, j]);	
-			}
-		}
-		return chunksOut;
-	}	
 	
 	private void generatePath()
 	{
 		List<Cell> cells = getAllChunkCells();
 		Cell start = cells[0];
-		Cell end = cells[cells.Count - 1];
+		Cell end = cells[cells.Count-1];
 		//Cell start = cells[Random.Range(0, cells.Count-1)];
 		//Cell end = cells[Random.Range(0, cells.Count-1)];
 		start.setType(Cell.CellType.Path);
 		end.setType(Cell.CellType.Path);
 		
-		Dijkstra dijkstra = new Dijkstra();
-		Path path = dijkstra.solve(cells, start, end);
+		//Dijkstra dijkstra = new Dijkstra();
+		//Path path = dijkstra.solve(cells, start, end);
+		AStar astar = new AStar();
+		Path path = astar.solve(cells, start, end);	
 		applyPath(path);
 	}
 		
@@ -178,14 +169,17 @@ public class WorldGrid : MonoBehaviour {
 		//Reset the blocks
 		foreach(Cell cell in getAllChunkCells())
 		{
-			float c = (float)cell.cost/3;
-			cell.renderer.material.color = new Color(c, c, c);	
+			if(!cell.selected)
+			{
+				float c = (float)cell.cost/3;
+				cell.renderer.material.color = new Color(c, c, c);
+			}
 		}
 		foreach(Cell cell in _path.getCells())
 		{
 			cell.setType(Cell.CellType.Path);
 		}
-		foreach(Chunk chunk in getChunks())
+		foreach(Chunk chunk in chunks_list)
 		{
 			chunk.applyPath(_path);	
 		}
@@ -198,20 +192,14 @@ public class WorldGrid : MonoBehaviour {
 	
 	private List<Cell> getAllChunkCells()
 	{
-		List<Cell> cells = new List<Cell>();
-		for(int i = 0; i < 100; i++)
+		List<Cell> cells_out = new List<Cell>();
+		foreach(Chunk chunk in chunks_list)
 		{
-			for(int j = 0; j < 100; j++)
+			foreach(Cell cell in chunk.getCells())
 			{
-				if(chunks[i, j] != null)
-				{
-					foreach(Cell cell in chunks[i,j].getCells())
-					{
-						cells.Add(cell);	
-					}
-				}
-			}			
+				cells_out.Add(cell);	
+			}
 		}
-		return cells;
+		return cells_out;
 	}
 }

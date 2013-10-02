@@ -51,7 +51,8 @@ public class Chunk : MonoBehaviour {
 				cells[i, j] = cell;
 				cell.transform.parent = this.transform;
 				cell.transform.position = transform.position + new Vector3(i, 0, j);
-				cell.cost = Random.Range(1, 4);
+				cell.cost = Random.Range(1, 3);
+				//cell.cost = 1;
 				cell.name = cell.cost + "";
 				float c = (float)cell.cost/3;
 				cell.renderer.material.color = new Color(c, c, c);

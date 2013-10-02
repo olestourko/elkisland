@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class Cell : MonoBehaviour {
 	
+	public bool selected = false;
 	public enum CellType
 	{
 		None,
@@ -20,12 +21,18 @@ public class Cell : MonoBehaviour {
 	public Cell bottom;
 	public string name;
 	
+	 //temporary for Astar
+	public Cell AStar_Parent;
+	public float g = 0;
+	public float f = 65536;
+	public float h = 0;
+	
 	/*--------------------------------------------------------------------------*/
 	/*For Dijkstra shortest path solver (to be moved)							*/
 	/*--------------------------------------------------------------------------*/
 	public int cost = 1;
 	
-	public List<Cell> dijkstra_GetNeighbors()
+	public List<Cell> getNeighbors()
 	{
 		List<Cell> cells = new List<Cell>();
 		if(left != null) cells.Add(left);
