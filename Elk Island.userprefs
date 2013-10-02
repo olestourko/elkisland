@@ -2,15 +2,14 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Chunk\Chunk.cs">
     <Files>
-      <File FileName="Assets\Graph Solvers\AStar.cs" Line="41" Column="28" />
-      <File FileName="Assets\Chunk\Chunk.cs" Line="175" Column="1" />
-      <File FileName="Assets\textLabel.cs" Line="1" Column="1" />
-      <File FileName="Assets\Camera\Movement.cs" Line="26" Column="71" />
-      <File FileName="Assets\Cell\Cell.cs" Line="23" Column="2" />
-      <File FileName="Assets\Path\Path.cs" Line="1" Column="1" />
-      <File FileName="Assets\GUI\gui.cs" Line="13" Column="2" />
-      <File FileName="Assets\Graph Solvers\Dijkstra.cs" Line="1" Column="1" />
-      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="155" Column="42" />
+      <File FileName="Assets\Graph Solvers\AStar.cs" Line="13" Column="3" />
+      <File FileName="Assets\Chunk\Chunk.cs" Line="104" Column="28" />
+      <File FileName="Assets\Path\Path.cs" Line="9" Column="32" />
+      <File FileName="Assets\GUI\gui.cs" Line="99" Column="4" />
+      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="207" Column="4" />
+      <File FileName="Assets\Region\Region.cs" Line="31" Column="3" />
+      <File FileName="Assets\Cell\Cell.cs" Line="105" Column="44" />
+      <File FileName="Assets\textLabel.cs" Line="16" Column="3" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -24,6 +23,8 @@
               </Node>
               <Node name="Graph Solvers" expanded="True" />
               <Node name="GUI" expanded="True" />
+              <Node name="Path" expanded="True" />
+              <Node name="Region" expanded="True" />
               <Node name="WorldGrid" expanded="True" />
             </Node>
           </Node>

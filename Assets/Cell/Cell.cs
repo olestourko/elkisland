@@ -14,8 +14,7 @@ public class Cell : MonoBehaviour {
 		Path,
 		Path_Start,
 		Path_End,
-		Woods,
-		Selected
+		Woods
 	}
 	
 	public Cell left;
@@ -63,7 +62,6 @@ public class Cell : MonoBehaviour {
 		Color c = Color.white;
 		if(_type == CellType.Path) c = Color.red;
 		else if(_type == CellType.Woods) c = Color.white;
-		else if(_type == CellType.Selected) c = Color.magenta;
 		else if(_type == CellType.Path_Start) c = Color.blue;
 		else if(_type == CellType.Path_End) c = Color.yellow;
 		

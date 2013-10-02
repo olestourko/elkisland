@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class AStar 
 {
+	//Has extra code for counting operations (to be moved or used)
 	private Cell end;
 	
 	public AStar()
@@ -25,12 +26,10 @@ public class AStar
 		while(open.Count > 0) 
 		{
 			Cell current = GetLowest(open);
-			current.setType(Cell.CellType.Selected);
-			//current.selected = true;
 			
 			if(current == _end) 
 			{	
-				Debug.Log (ops);
+				//Debug.Log (ops);
 				return GeneratePath(_end);
 			}
 			
@@ -40,6 +39,9 @@ public class AStar
 			
 			foreach(Cell adjacent in current.getNeighbors())
 			{
+				//Elimate cells not in the input graph (but may be linked to)
+				if(!_graph.Contains(adjacent)) continue;
+				
 				float tentative_g = current.g + adjacent.cost;
 				float tentative_f = tentative_g + Distance(adjacent, _end) * 2.0f;
 				

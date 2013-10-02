@@ -11,10 +11,12 @@ public class Chunk : MonoBehaviour {
 	private GUIText label;
 	
 	Cell[,] cells = new Cell[5,5];
+	List<Cell> cells_list = new List<Cell>();
 	public Chunk left;
 	public Chunk top;
 	public Chunk right;
 	public Chunk bottom;
+	private List<Path> paths = new List<Path>();
 	
 	/*Event firing when chunk is init'd*/
 	public event InitHandler Init;
@@ -32,9 +34,9 @@ public class Chunk : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		label.text = name;
+		/*
 		Color c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
 		if(isActive) c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
-		/*
 		if(selected)
 		{
 			Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
@@ -79,7 +81,7 @@ public class Chunk : MonoBehaviour {
 				cell.name = cell.cost + "";
 				float c = (float)cell.cost/3;
 				cell.renderer.material.color = new Color(c, c, c);
-				
+				cells_list.Add(cell);
 			}			
 		}
 		
@@ -99,6 +101,7 @@ public class Chunk : MonoBehaviour {
 	//To be merged with generate()
 	public void regenerate()
 	{
+		paths = new List<Path>();
 		for(int i = 0; i < 5; i++)
 		{
 			for(int j = 0; j < 5; j++)
@@ -106,15 +109,14 @@ public class Chunk : MonoBehaviour {
 				Cell cell = cells[i, j];
 				cell.cost = Random.Range(1, 4);
 				cell.name = cell.cost + "";
-				float c = (float)cell.cost/3;
-				cell.renderer.material.color = new Color(c, c, c);
-				
+				cell.setType(Cell.CellType.Woods);
 			}			
 		}
 	}
 	
 	public void applyPath(Path _path)
 	{
+		paths = new List<Path>();
 		bool onPath = false;
 		Path localPath = new Path();
 		localPath.partOf = _path;
@@ -130,42 +132,35 @@ public class Chunk : MonoBehaviour {
 					localPath = new Path();
 					onPath = true;
 				}
-				if(!this.hasCell(_path.getNext(cell)))
+				else if(!this.hasCell(_path.getNext(cell)))
 				{
 					cell.setType(Cell.CellType.Path_End);
 					onPath = false;
 					//Debug.Log ("A path runs through chunk " + name);	
 				}
+				else
+				{
+					cell.setType(Cell.CellType.Path);
+				}
 				localPath.addCell(cell);
-			}
-				
+			}		
 		}
+		paths.Add(localPath);
+	}
+	
+	public List<Path> GetPaths()
+	{
+		return paths;
 	}
 	
 	public List<Cell> getCells()
 	{
-		List<Cell> cells_out = new List<Cell>();
-		for(int i = 0; i < 5; i++)
-		{
-			for(int j = 0; j < 5; j++)
-			{
-				cells_out.Add (cells[i,j]);
-			}			
-		}
-		return cells_out;
+		return cells_list;
 	}
 	
 	public bool hasCell(Cell _cell)
 	{
-		if(_cell == null) return false;
-		for(int i = 0; i < 5; i++)
-		{
-			for(int j = 0; j < 5; j++)
-			{
-				if(cells[i, j] == _cell) return true;
-			}			
-		}
-		return false;
+		return cells_list.Contains(_cell);
 	}
 	
 	public void makeActive()
@@ -213,4 +208,22 @@ public class Chunk : MonoBehaviour {
 			}
 		}
 	}
+	
+	//Experimental
+	/*
+	public void Destroy()
+	{
+		List<Cell> cells_list = new List<Cell>();
+		foreach(Cell cell in getCells())
+		{
+			cells_list.Add(cell);	
+		}
+		while(cells_list.Count > 0)
+		{
+			Cell cell = cells_list[0];
+			cells_list.Remove(cell);
+			GameObject.Destroy(cell);
+		}
+	}
+	*/
 }

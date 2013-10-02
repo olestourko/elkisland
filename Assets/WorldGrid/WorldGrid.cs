@@ -66,16 +66,27 @@ public class WorldGrid : MonoBehaviour {
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
+		List<Chunk> chunks_to_deactivate = new List<Chunk>();
 		foreach(Chunk chunk in chunks_list)
 		{
 			if(Vector3.Distance(chunk.transform.position, pos_prescence) > drawDistance)
 			{
-				chunk.makeInactive();
+				chunks_to_deactivate.Add(chunk);
 			}
 			else
 			{
-				chunk.makeActive();	
+				chunk.makeActive();
+				chunk.enabled = true;
 			}
+		}
+		while(chunks_to_deactivate.Count > 0)
+		{
+			Chunk chunk = chunks_to_deactivate[0];
+			chunks_to_deactivate.Remove(chunk);
+			chunk.makeInactive();
+			chunk.enabled = false;
+			//chunks_list.Remove(chunk);
+			//Destroy(chunk.gameObject);
 		}
 	}
 	
@@ -222,10 +233,6 @@ public class WorldGrid : MonoBehaviour {
 		foreach(Cell cell in getAllChunkCells())
 		{
 			cell.setType(Cell.CellType.Woods);
-		}
-		foreach(Cell cell in _path.getCells())
-		{
-			cell.setType(Cell.CellType.Path);
 		}
 		foreach(Chunk chunk in chunks_list)
 		{
