@@ -45,6 +45,11 @@ public class Path {
 		return null;
 	}
 	
+	public Cell getRandomCell()
+	{
+		return cells[Random.Range(0, cells.Count-1)];	
+	}
+	
 	public int getLength()
 	{
 		return cells.Count;	

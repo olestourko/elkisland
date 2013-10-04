@@ -9,6 +9,10 @@ public class Region {
 	{
 		
 	}
+	public Region(List<Chunk> _chunks)
+	{
+		
+	}
 	
 	public void AddChunk(Chunk _chunk)
 	{
@@ -28,22 +32,22 @@ public class Region {
 	public void Repath()
 	{
 		List<Path> paths = new List<Path>();
+		//get all the paths in the region (world paths)
 		foreach(Chunk chunk in chunks)
 		{
-			foreach(Path path in chunk.GetPaths())
+			foreach(Path path in chunk.GetWorldPaths())
 			{
-				if(!paths.Contains(path.partOf) && path.partOf != null) paths.Add(path.partOf);
+				if(!paths.Contains(path) && path != null) paths.Add(path);
 			}
-		}
-		
+		}		
 		//regenerate the chunk weights
 		foreach(Chunk chunk in chunks) chunk.regenerate();
-		
 		
 		foreach(Path path in paths)
 		{
 			Cell start = null;
 			Cell end = null;
+			//Find the start and end of the path
 			foreach(Cell cell in path.getCells())
 			{
 				if(this.Contains(cell))
@@ -52,14 +56,21 @@ public class Region {
 					else if(!this.Contains(path.getNext(cell))) end = cell;
 				}
 			}
+			//Apply the path, using the start and end
 			if(start != null & end != null)
 			{
 				AStar astar = new AStar();
 				Path newPath = astar.solve(GetCells(), start, end);
-				foreach(Chunk chunk in chunks) chunk.applyPath(newPath);
+				ApplyPath(newPath);
 			}
-			Debug.Log ("Region has path " + path.getLength());
+
 		}
+	}
+	
+	public void ApplyPath(Path _path)
+	{
+		foreach(Chunk chunk in chunks) chunk.applyPath(_path);
+		foreach(Chunk chunk in chunks) chunk.ApplyModels();
 	}
 	
 	public List<Cell> GetCells()

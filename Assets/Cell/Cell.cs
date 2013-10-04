@@ -29,6 +29,11 @@ public class Cell : MonoBehaviour {
 	public float f = 65536;
 	public float h = 0;
 	
+	//Model
+	public GameObject model_straight;
+	public GameObject model_turn;
+	private GameObject model_instance;
+	
 	/*--------------------------------------------------------------------------*/
 	/*For Dijkstra shortest path solver (to be moved)							*/
 	/*--------------------------------------------------------------------------*/
@@ -58,12 +63,13 @@ public class Cell : MonoBehaviour {
 	
 	public void setType(CellType _type)
 	{
+		Destroy(model_instance);
 		cellType = _type;
 		Color c = Color.white;
-		if(_type == CellType.Path) c = Color.red;
+		if(_type == CellType.Path) c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
 		else if(_type == CellType.Woods) c = Color.white;
-		else if(_type == CellType.Path_Start) c = Color.blue;
-		else if(_type == CellType.Path_End) c = Color.yellow;
+		else if(_type == CellType.Path_Start) c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+		else if(_type == CellType.Path_End) c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
 		
 		if(cellType == CellType.Woods)
 		{
@@ -101,5 +107,88 @@ public class Cell : MonoBehaviour {
 	{
 		selected = false;
 		renderer.material.color = originalColor;	
+	}
+	
+	public void DetectModelType()
+	{
+		Destroy(model_instance);
+		List<CellType> valid_cell_types = new List<CellType>();
+		valid_cell_types.Add(CellType.Path);
+		valid_cell_types.Add(CellType.Path_Start);
+		valid_cell_types.Add(CellType.Path_End);	
+		if(!valid_cell_types.Contains(cellType)) return;
+		
+		int num_adjacent_paths = 0;
+		if(left != null) { if(valid_cell_types.Contains(left.cellType)) num_adjacent_paths++; }
+		if(right != null) { if(valid_cell_types.Contains(right.cellType)) num_adjacent_paths++; }
+		if(top != null) { if(valid_cell_types.Contains(top.cellType)) num_adjacent_paths++; }
+		if(bottom != null) { if(valid_cell_types.Contains(bottom.cellType)) num_adjacent_paths++; }
+		if(num_adjacent_paths > 2) return;
+		
+		//Straights
+		if(left != null && right != null)
+		{
+			if(valid_cell_types.Contains(left.cellType) && valid_cell_types.Contains(right.cellType))
+			{
+				InstantiateModel(model_straight);
+				return;
+			}
+		}
+		
+		if(top != null && bottom != null)
+		{
+			if(valid_cell_types.Contains(top.cellType) && valid_cell_types.Contains(bottom.cellType))
+			{
+				InstantiateModel(model_straight);
+				model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
+				return;
+			}
+		}
+		//Turns
+		if(top != null && left != null)
+		{
+			if(valid_cell_types.Contains(top.cellType) && valid_cell_types.Contains(left.cellType))
+			{
+				InstantiateModel(model_turn);
+				//model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
+				return;
+			}
+		}
+		if(bottom != null && right != null)
+		{
+			if(valid_cell_types.Contains(bottom.cellType) && valid_cell_types.Contains(right.cellType))
+			{
+				InstantiateModel(model_turn);
+				model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+				return;
+			}
+		}
+		
+		if(top != null && right != null)
+		{
+			if(valid_cell_types.Contains(top.cellType) && valid_cell_types.Contains(right.cellType))
+			{
+				InstantiateModel(model_turn);
+				model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+				return;
+			}
+		}
+		if(bottom != null && left != null)
+		{
+			if(valid_cell_types.Contains(bottom.cellType) && valid_cell_types.Contains(left.cellType))
+			{
+				InstantiateModel(model_turn);
+				model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+				model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+				return;
+			}
+		}
+	}
+	
+	private void InstantiateModel(GameObject _model)
+	{
+		model_instance = Instantiate(_model) as GameObject;
+		model_instance.transform.position = this.transform.position;
+		model_instance.transform.parent = this.transform;
 	}
 }

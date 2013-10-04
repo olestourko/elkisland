@@ -32,13 +32,16 @@ public class Chunk : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{	
 		label.text = name;
 		/*
-		Color c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
-		if(isActive) c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
-		if(selected)
+		bool visible = false;
+		Vector3 screen_position = Camera.main.WorldToViewportPoint(transform.position);
+		if(screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f) visible = true;
+		if(!visible)
 		{
+			Color c = new Color(0.0f, 1.0f, 0.0f, 1.0f);
 			Debug.DrawLine(transform.position + new Vector3(0f, 0f, 0f), transform.position + new Vector3(0f, 0f, 4f), c);
 			Debug.DrawLine(transform.position + new Vector3(4f, 0f, 0f), transform.position + new Vector3(4f, 0f, 4f), c);
 			Debug.DrawLine(transform.position + new Vector3(0f, 0f, 4f), transform.position + new Vector3(4f, 0f, 4f), c);
@@ -77,7 +80,6 @@ public class Chunk : MonoBehaviour {
 				cell.transform.parent = this.transform;
 				cell.transform.position = transform.position + new Vector3(i, 0, j);
 				cell.cost = Random.Range(1, 4);
-				//cell.cost = 1;
 				cell.name = cell.cost + "";
 				float c = (float)cell.cost/3;
 				cell.renderer.material.color = new Color(c, c, c);
@@ -114,12 +116,17 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 	
+	public void ClearLocalPaths()
+	{
+		paths = new List<Path>();	
+	}
+	
 	public void applyPath(Path _path)
 	{
-		paths = new List<Path>();
+		//Debug.Log ("Chunk " + name + " applied path");
+		//paths = new List<Path>();
 		bool onPath = false;
-		Path localPath = new Path();
-		localPath.partOf = _path;
+		Path localPath = null;
 		foreach(Cell cell in _path.getCells())
 		{
 			//Is this the first cell within the chunk for this path?
@@ -130,6 +137,7 @@ public class Chunk : MonoBehaviour {
 				{
 					cell.setType(Cell.CellType.Path_Start);
 					localPath = new Path();
+					localPath.partOf = _path;
 					onPath = true;
 				}
 				else if(!this.hasCell(_path.getNext(cell)))
@@ -143,14 +151,48 @@ public class Chunk : MonoBehaviour {
 					cell.setType(Cell.CellType.Path);
 				}
 				localPath.addCell(cell);
+				//Debug.Log("Chunk " + name + " added local path");
 			}		
 		}
-		paths.Add(localPath);
+		if(localPath != null)
+		{
+			if(localPath.getLength() >= 2) 
+			{
+				//Debug.Log ("Chunk " + name + " added local path");
+				paths.Add(localPath);
+				//Debug.Log (localPath.partOf.getLength());
+			}
+		}
+		
+		GetWorldPaths();
 	}
 	
-	public List<Path> GetPaths()
+	public List<Path> GetLocalPaths()
 	{
 		return paths;
+	}
+	
+	public List<Path> GetWorldPaths()
+	{
+		List<Path> worldPaths = new List<Path>();
+		foreach(Path path in paths)
+		{
+			if(!worldPaths.Contains(path.partOf)) 
+			{
+				//Debug.Log (path.partOf.getLength());
+				worldPaths.Add(path.partOf);
+			}
+		}
+		//Debug.Log ("Chunk " + name + " worldPaths: " + worldPaths.Count);
+		return worldPaths;
+	}
+	
+	public void ApplyModels()
+	{
+		foreach(Cell cell in cells_list)
+		{
+			cell.DetectModelType();	
+		}
 	}
 	
 	public List<Cell> getCells()
@@ -160,6 +202,7 @@ public class Chunk : MonoBehaviour {
 	
 	public bool hasCell(Cell _cell)
 	{
+		if(_cell == null) return false;
 		return cells_list.Contains(_cell);
 	}
 	

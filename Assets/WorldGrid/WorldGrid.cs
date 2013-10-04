@@ -40,6 +40,24 @@ public class WorldGrid : MonoBehaviour {
 		gui = GameObject.Find("gui").GetComponent("gui") as gui;
 	}
 	
+	void Update()
+	{
+		List<Chunk> visible_chunks = new List<Chunk>();
+		foreach(Chunk chunk in chunks_list)
+		{
+			Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
+			if(!(screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
+			{
+				visible_chunks.Add(chunk);
+			}
+			chunk.Deselect();
+		}
+		foreach(Chunk chunk in visible_chunks)
+		{
+			chunk.Select();	
+		}
+	}
+	
 	void FixedUpdate () 
 	{
 		/*--------------------------------------------------------------------------*/
@@ -212,6 +230,9 @@ public class WorldGrid : MonoBehaviour {
 	
 	private void generatePath()
 	{
+		//Debug.Log ("START----------------");
+		Reset();
+		
 		List<Cell> cells = getAllChunkCells();
 		Cell start = cells[0];
 		Cell end = cells[cells.Count-1];
@@ -225,20 +246,39 @@ public class WorldGrid : MonoBehaviour {
 		AStar astar = new AStar();
 		Path path = astar.solve(cells, start, end);	
 		applyPath(path);
-	}
+		//Debug.Log ("END----------------");
+		//Generate a 2nd path
 		
-	private void applyPath(Path _path)
+		start = path.getRandomCell();
+		end = cells[Random.Range(0, cells.Count-1)];
+		start.setType(Cell.CellType.Path);
+		end.setType(Cell.CellType.Path);
+		astar = new AStar();
+		path = astar.solve(cells, start, end);	
+		applyPath(path);
+		
+	}
+	
+	//Reset all chunks
+	private void Reset()
 	{
 		//Reset the blocks
 		foreach(Cell cell in getAllChunkCells())
 		{
 			cell.setType(Cell.CellType.Woods);
 		}
+		foreach(Chunk chunk in chunks_list) chunk.ClearLocalPaths();
+	
+	}
+	
+	private void applyPath(Path _path)
+	{
 		foreach(Chunk chunk in chunks_list)
 		{
 			chunk.applyPath(_path);	
-		}
+		}	
 		
+		foreach(Chunk chunk in chunks_list) chunk.ApplyModels();
 		/* For each chunk where in which a cell from the path is within it, 
 		 * apply the path to that cell. The chunk will create its own internal
 		 * path object which will be used in region regeneration.
