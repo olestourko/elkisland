@@ -6,7 +6,9 @@ public class Path {
 	
 	private List<Cell> cells = new List<Cell>();
 	public Path partOf;
-	// Use this for initialization
+
+	// for animation
+	private int c = 0;
 	public Path()
 	{
 		
@@ -53,5 +55,14 @@ public class Path {
 	public int getLength()
 	{
 		return cells.Count;	
+	}
+	
+	//Path animation
+	public void Animate()
+	{
+		cells[c].Deselect();
+		c++;
+		if(c > cells.Count-1) c = 0;
+		cells[c].Select();
 	}
 }

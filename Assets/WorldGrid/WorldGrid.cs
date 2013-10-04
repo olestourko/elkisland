@@ -6,30 +6,23 @@ public class WorldGrid : MonoBehaviour {
 	public Cell cellPrefab;
 	public int size;
 	private List<List<Cell>> cells = new List<List<Cell>>();
-	/*--------------------------------------------------------------------------*/
-	/*Chunks								           							*/
-	/*--------------------------------------------------------------------------*/
+
 	public float drawDistance = 30.0f;
 	public Chunk chunkPrefab;
 	public Chunk[,] chunks = new Chunk[100, 100];
 	//These are used to speed up generation and loading
 	public List<Chunk> chunks_list = new List<Chunk>();
 	//public List<Cell> chunkCells = new List<Cell>();
-	public List<Chunk> pendingChunks = new List<Chunk>();
+	private List<Chunk> pendingChunks = new List<Chunk>();
+	private List<Chunk> completedChunks = new List<Chunk>();
+	private Region previous_region;
 	public GameObject prescence;
 
 	//GUI
 	gui gui;
 	
-	//Kernel must be odd x odd
-	public int[,] kernel = 
-	{
-		{0, 0, 1, 0, 0},
-		{0, 1, 1, 1, 0},
-		{1, 1, 1, 1, 1},
-		{0, 1, 1, 1, 0},
-		{0, 0, 1, 0, 0}
-	};
+	public Kernel kernel_view = new Kernel5x5();
+	public Kernel kernel_generate = new Kernel9x9();
 	
 	private Region selectedRegion;
 	
@@ -38,7 +31,9 @@ public class WorldGrid : MonoBehaviour {
 	bool visible_region_changed = false;
 	private float generation_timer = 0.0f;
 	
-	/*--------------------------------------------------------------------------*/
+	//Paths (experimental)
+	private float t = 0.0f;
+	private List<Path> paths = new List<Path>();
 	
 	void Start () 
 	{
@@ -47,6 +42,12 @@ public class WorldGrid : MonoBehaviour {
 	
 	void Update()
 	{
+		t += Time.deltaTime;
+		if(t > 0.1f)
+		{
+			FixedUpdate_1s();
+			t = 0.0f;
+		}
 		/*
 		generation_timer += Time.deltaTime;
 		//Regenerate chunks which arent visible
@@ -84,24 +85,50 @@ public class WorldGrid : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		int i = (int)Mathf.Floor(prescence.transform.position.x / 5) + 50;
 		int j = (int)Mathf.Floor(prescence.transform.position.z / 5) + 50;
-
-		for(int k = -2; k <= 2; k++)
+		
+		bool generate = false;
+		int size = kernel_view.GetSize();
+		int[,] kernel_array = kernel_view.GetArray();
+		for(int k = -size/2; k <= size/2; k++)
 		{
-			for(int l = -2; l <= 2; l++)
+			for(int l = -size/2; l <= size/2; l++)
 			{
-				if(kernel[k+2, l+2] == 1)
+				if(kernel_array[k+size/2, l+size/2] == 1)
 				{
 					if(chunks[i + k, j + l] == null)
 					{
-						generateChunk(i + k, j + l);
+						generate = true;
+						//CreateChunk(i + k, j + l);
 					}
 				}
 			}
 		}
 		
+		size = kernel_generate.GetSize();
+		kernel_array = kernel_generate.GetArray();
+		if(generate)
+		{
+			for(int k = -size/2; k <= size/2; k++)
+			{
+				for(int l = -size/2; l <= size/2; l++)
+				{
+					if(kernel_array[k+size/2, l+size/2] == 1)
+					{
+						if(chunks[i + k, j + l] == null)
+						{
+							CreateChunk(i + k, j + l);
+						}
+					}
+				}
+			}
+		}
+		
+		
+		
 		/*--------------------------------------------------------------------------*/
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
+		/*
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
 		List<Chunk> chunks_to_deactivate = new List<Chunk>();
 		foreach(Chunk chunk in chunks_list)
@@ -125,9 +152,19 @@ public class WorldGrid : MonoBehaviour {
 			//chunks_list.Remove(chunk);
 			//Destroy(chunk.gameObject);
 		}
+		*/
 	}
 	
-	public Chunk generateChunk(int _i, int _j)
+	void FixedUpdate_1s()
+	{
+		//Animate path (experimental)
+		foreach(Path path in paths)
+		{
+			if(path != null) path.Animate();
+		}
+	}
+	
+	public Chunk CreateChunk(int _i, int _j)
 	{
 		Chunk chunk = Instantiate(chunkPrefab) as Chunk;
 		chunk.transform.parent = this.transform;
@@ -135,7 +172,6 @@ public class WorldGrid : MonoBehaviour {
 		chunk.name = "c " + _i + ", " + _j;
 		chunk.transform.position = new Vector3((_i - 50.0f)  * 5.0f, 0.0f, (_j - 50.0f) * 5.0f);
 		chunks[_i, _j] = chunk;
-		
 		chunks_list.Add(chunk);
 		
 		/*Link to adjacent chunks*/
@@ -164,7 +200,7 @@ public class WorldGrid : MonoBehaviour {
 			chunks[_i, _j+1].bottom = chunk;
 		}
 		
-		chunk.Init += new Chunk.InitHandler(chunkInitListener);
+		chunk.Init += new Chunk.InitHandler(ChunkInitListener);
 		pendingChunks.Add(chunk);
 		return chunk;
 	}
@@ -173,11 +209,15 @@ public class WorldGrid : MonoBehaviour {
 	{
 		int i = _i;
 		int j = _j;
-		for(int k = -2; k <= 2; k++)
+		
+		int size = kernel_view.GetSize();
+		int[,] kernel_array = kernel_view.GetArray();
+		
+		for(int k = -size/2; k <= size/2; k++)
 		{
-			for(int l = -2; l <= 2; l++)
+			for(int l = -size/2; l <= size/2; l++)
 			{
-				if(kernel[k+2, l+2] == 1)
+				if(kernel_array[k+size/2, l+size/2] == 1)
 				{
 					if(chunks[i + k, j + l] != null)
 					{
@@ -200,11 +240,14 @@ public class WorldGrid : MonoBehaviour {
 		List<Chunk> chunks_in_region = new List<Chunk>();
 		int i = _x;
 		int j = _z;
-		for(int k = -2; k <= 2; k++)
+		
+		int size = kernel_view.GetSize();
+		int[,] kernel_array = kernel_view.GetArray();
+		for(int k = -size/2; k <= size/2; k++)
 		{
-			for(int l = -2; l <= 2; l++)
+			for(int l = -size/2; l <= size/2; l++)
 			{
-				if(kernel[k+2, l+2] == 1)
+				if(kernel_view.GetArray()[k+size/2, l+size/2] == 1)
 				{
 					if(chunks[i + k, j + l] != null)
 					{
@@ -233,16 +276,36 @@ public class WorldGrid : MonoBehaviour {
 	/*--------------------------------------------------------------------------*/
 	
 	
-	private void chunkInitListener(Chunk _chunk)
+	private void ChunkInitListener(Chunk _chunk)
 	{
-		//Debug.Log ("Chunk " + _chunk.name + " Init'd");
 		pendingChunks.Remove(_chunk);
-		//foreach(Cell cell in _chunk.getCells()) chunkCells.Add(cell);
+		completedChunks.Add(_chunk);
 		if(pendingChunks.Count == 0)
 		{
-			foreach(Chunk chunk in chunks_list) chunk.link();
-			generatePath();
+			if(previous_region != null) previous_region.Deselect();
+			Region region = new Region(completedChunks);
+			region.Select();
+			completedChunks = new List<Chunk>();
+			foreach(Chunk chunk in chunks_list) chunk.LinkCells();
+			//Generate paths within region
+			if(paths.Count == 0)
+			{
+				Path path = region.GeneratePath();
+				if(path != null) 
+				{
+					paths.Add(path);
+					gui.path_count = paths.Count;
+				}
+			}
+			else
+			{
+				region.GeneratePaths(paths);
+			}
+
+			previous_region = region;
+			//generatePath(); //Old, whole-map generation
 		}
+		//Update GUI
 		gui.chunk_count = chunks_list.Count;
 		gui.cell_count = chunks_list.Count * 5;
 	}
@@ -295,7 +358,7 @@ public class WorldGrid : MonoBehaviour {
 	{
 		foreach(Chunk chunk in chunks_list)
 		{
-			chunk.applyPath(_path);	
+			chunk.ApplyPath(_path);	
 		}	
 		
 		foreach(Chunk chunk in chunks_list) chunk.ApplyModels();

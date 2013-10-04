@@ -10,6 +10,7 @@ public class gui : MonoBehaviour {
 	
 	public int chunk_count;
 	public int cell_count;
+	public int path_count;
 	
 	private WorldGrid worldGrid;
 	
@@ -40,9 +41,11 @@ public class gui : MonoBehaviour {
 		text.normal.textColor = Color.white;
 		
 		GUI.skin.box.normal.background = texture;	
-		GUI.Box(new Rect (0, Screen.height - 30, 200, 30), GUIContent.none);
-		GUI.Label(new Rect (10, Screen.height - 25, 100, 22), "chunks: " + chunk_count, text);
-		GUI.Label(new Rect (110, Screen.height - 25, 100, 22), "cells: " + cell_count, text);
+		GUI.Box(new Rect (0, Screen.height - 50, 100, 50), GUIContent.none);
+		GUI.Box(new Rect (100, Screen.height - 30, 100, 30), GUIContent.none);
+		GUI.Label(new Rect (10, Screen.height - 25, 100, 20), "chunks: " + chunk_count, text);
+		GUI.Label(new Rect (10, Screen.height - 45, 100, 20), "cells: " + cell_count, text);
+		GUI.Label(new Rect (110, Screen.height - 25, 100, 20), "paths: " + path_count, text);
 	}
 	
 	private void processInput()

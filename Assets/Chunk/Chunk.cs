@@ -80,6 +80,7 @@ public class Chunk : MonoBehaviour {
 				cell.transform.parent = this.transform;
 				cell.transform.position = transform.position + new Vector3(i, 0, j);
 				cell.cost = Random.Range(1, 4);
+				//cell.name = (i*5 + j).ToString();
 				cell.name = cell.cost + "";
 				float c = (float)cell.cost/3;
 				cell.renderer.material.color = new Color(c, c, c);
@@ -121,7 +122,7 @@ public class Chunk : MonoBehaviour {
 		paths = new List<Path>();	
 	}
 	
-	public void applyPath(Path _path)
+	public void ApplyPath(Path _path)
 	{
 		//Debug.Log ("Chunk " + name + " applied path");
 		//paths = new List<Path>();
@@ -195,10 +196,23 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 	
+	//--------------------------------------------------------------------------
+	// Get various sets of cells
+	//--------------------------------------------------------------------------
 	public List<Cell> getCells()
 	{
 		return cells_list;
 	}
+	public List<Cell> GetCells_Border()
+	{
+		List<Cell> cells_out = new List<Cell>();
+		for(int i = 0; i < 5; i++) cells_out.Add(cells[0, i]);
+		for(int i = 0; i < 5; i++) cells_out.Add(cells[4, i]);
+		for(int i = 1; i < 4; i++) cells_out.Add(cells[i, 0]);
+		for(int i = 1; i < 4; i++) cells_out.Add(cells[i, 4]);
+		return cells_out;
+	}
+	//--------------------------------------------------------------------------
 	
 	public bool hasCell(Cell _cell)
 	{
@@ -216,7 +230,7 @@ public class Chunk : MonoBehaviour {
 	}
 	
 	/*Link cells between chunks*/
-	public void link()
+	public void LinkCells()
 	{
 		if(left != null)
 		{

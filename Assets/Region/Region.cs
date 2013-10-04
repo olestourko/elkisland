@@ -38,7 +38,55 @@ public class Region {
 	{
 		foreach(Chunk chunk in chunks) chunk.Deselect();
 	}
+	
+	//Generates a single path in the region
+	public Path GeneratePath()
+	{
+		List<Cell> cells = GetCells();
+		Cell start = cells[0];
+		Cell end = cells[cells.Count-1];
+		//Cell start = cells[Random.Range(0, cells.Count-1)];
+		//Cell end = cells[Random.Range(0, cells.Count-1)];
+		start.setType(Cell.CellType.Path);
+		end.setType(Cell.CellType.Path);
+		AStar astar = new AStar();
+		Path path = astar.solve(cells, start, end);	
+		if(path != null) ApplyPath(path);
 		
+		//ExistsIncomingPath();
+		return path;
+	}
+	//Takes in a list of existing paths and figures our which are in the region, and continues them
+	public List<Path> GeneratePaths(List<Path> _paths)
+	{
+		Debug.Log("Paths input: " + _paths.Count);
+		return null;
+	}
+	
+	//Detects if there is a path coming into the region
+	private bool ExistsIncomingPath()
+	{
+		List<Cell> cells = this.GetCells();
+		List<Cell.CellType> path_types = new List<Cell.CellType>();
+		path_types.Add(Cell.CellType.Path_Start);
+		path_types.Add(Cell.CellType.Path_End);
+		
+		foreach(Cell cell_inner in this.GetBorderCells()) 
+		{	
+			foreach(Cell cell_adjacent in cell_inner.getNeighbors())
+			{
+				if(!cells.Contains(cell_adjacent))
+				{
+					if(path_types.Contains(cell_adjacent.cellType))
+					{
+						Debug.Log("An adjacent path exists @ " + cell_inner.name);	
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
 	public void Repath()
 	{
 		List<Path> world_paths = new List<Path>();
@@ -122,21 +170,47 @@ public class Region {
 	
 	public void ApplyPath(Path _path)
 	{
-		foreach(Chunk chunk in chunks) chunk.applyPath(_path);
+		foreach(Chunk chunk in chunks) chunk.ApplyPath(_path);
 		foreach(Chunk chunk in chunks) chunk.ApplyModels();
 	}
-	
-	public List<Cell> GetCells()
+		
+	//Get chunks bordering this region (inside)
+	public List<Chunk> GetBorderChunks()
 	{
-		List<Cell> cells = new List<Cell>();
+		List<Chunk> chunks_out = new List<Chunk>();
 		foreach(Chunk chunk in chunks)
+		{
+			if(!chunks.Contains(chunk.top) || !chunks.Contains(chunk.bottom)
+			|| !chunks.Contains(chunk.left) || !chunks.Contains(chunk.right))
+				chunks_out.Add(chunk);
+		}
+		return chunks_out;
+	}
+	//Gets cells bordering this region (inside)
+	public List<Cell> GetBorderCells()
+	{
+		List<Cell> cells = this.GetCells();
+		List<Cell> cells_out = new List<Cell>();
+		foreach(Chunk chunk in this.GetBorderChunks())
 		{
 			foreach(Cell cell in chunk.getCells())
 			{
-				cells.Add(cell);
+				if(!cells.Contains(cell.top) || !cells.Contains(cell.bottom)
+				|| !cells.Contains(cell.left) || !cells.Contains(cell.right))
+					cells_out.Add(cell);
 			}
 		}
-		return cells;
+		return cells_out;
+	}
+	//Gets all cells from chunks
+	public List<Cell> GetCells()
+	{
+		List<Cell> cells_out = new List<Cell>();
+		foreach(Chunk chunk in chunks)
+		{
+			foreach(Cell cell in chunk.getCells()) cells_out.Add(cell);
+		}
+		return cells_out;
 	}
 	
 	public bool ContainsCell(Cell _cell)
