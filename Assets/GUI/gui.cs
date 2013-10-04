@@ -80,6 +80,7 @@ public class gui : MonoBehaviour {
 				worldGrid.regenerateChunk(x, z);
 			}
 		}
+		
 		else if(command.Equals("select"))
 		{
 			if(args.Count != 2)

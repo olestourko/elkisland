@@ -11,12 +11,22 @@ public class Region {
 	}
 	public Region(List<Chunk> _chunks)
 	{
-		
+		foreach(Chunk chunk in _chunks) chunks.Add(chunk);
+	}
+	
+	public bool ContainsChunk(Chunk _chunk)
+	{
+		return chunks.Contains(_chunk);	
 	}
 	
 	public void AddChunk(Chunk _chunk)
 	{
 		if(!chunks.Contains(_chunk)) chunks.Add(_chunk);
+	}
+	
+	public void RemoveChunk(Chunk _chunk)
+	{
+		chunks.Remove(_chunk);	
 	}
 	
 	public void Select()
@@ -31,40 +41,83 @@ public class Region {
 		
 	public void Repath()
 	{
-		List<Path> paths = new List<Path>();
+		List<Path> world_paths = new List<Path>();
 		//get all the paths in the region (world paths)
 		foreach(Chunk chunk in chunks)
 		{
 			foreach(Path path in chunk.GetWorldPaths())
 			{
-				if(!paths.Contains(path) && path != null) paths.Add(path);
+				if(!world_paths.Contains(path) && path != null) world_paths.Add(path);
 			}
-		}		
-		//regenerate the chunk weights
-		foreach(Chunk chunk in chunks) chunk.regenerate();
+		}	
 		
-		foreach(Path path in paths)
+		//regenerate the chunk weights and clear their paths
+		foreach(Chunk chunk in chunks) 
+		{	
+			chunk.regenerate();
+			chunk.ClearLocalPaths();
+		}
+		
+		//Split world paths if necessary
+		List<Path> local_paths = new List<Path>();
+		Path new_local_path = null;
+		foreach(Path path in world_paths)
 		{
+			Cell start = null;
+			Cell end = null;
+			foreach(Cell cell in path.getCells())
+			{
+				if(this.ContainsCell(cell))
+				{
+					if(start == null) 
+					{
+						new_local_path = new Path();
+						new_local_path.partOf = path;
+						start = cell;
+					}
+					else if(!this.ContainsCell(path.getNext(cell))) end = cell;
+					new_local_path.addCell(cell);
+				}
+				
+				if(start != null && end != null && new_local_path != null)
+				{
+					local_paths.Add(new_local_path);
+					start = null;
+					end = null;
+					new_local_path = null;
+				}
+			}
+		}
+		
+		//Apply the paths
+		foreach(Path path in local_paths)
+		{
+			/*
 			Cell start = null;
 			Cell end = null;
 			//Find the start and end of the path
 			foreach(Cell cell in path.getCells())
 			{
-				if(this.Contains(cell))
+				if(this.ContainsCell(cell))
 				{
 					if(start == null) start = cell;
-					else if(!this.Contains(path.getNext(cell))) end = cell;
+					else if(!this.ContainsCell(path.getNext(cell))) end = cell;
 				}
 			}
 			//Apply the path, using the start and end
-			if(start != null & end != null)
+			if(start != null && end != null)
 			{
 				AStar astar = new AStar();
 				Path newPath = astar.solve(GetCells(), start, end);
-				ApplyPath(newPath);
+				if(newPath != null) ApplyPath(newPath);
 			}
-
+			 */
+			AStar astar = new AStar();
+			Path newPath = astar.solve(GetCells(), path.getStart(), path.getEnd());
+			ApplyPath(newPath);
 		}
+		Debug.Log (local_paths.Count + " new local paths generated for " + world_paths.Count + " world paths.");
+		foreach(Path path in world_paths) Debug.Log("\t" + path.getLength());
 	}
 	
 	public void ApplyPath(Path _path)
@@ -86,7 +139,7 @@ public class Region {
 		return cells;
 	}
 	
-	public bool Contains(Cell _cell)
+	public bool ContainsCell(Cell _cell)
 	{
 		foreach(Chunk chunk in chunks)
 		{

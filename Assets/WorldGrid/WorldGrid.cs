@@ -33,6 +33,11 @@ public class WorldGrid : MonoBehaviour {
 	
 	private Region selectedRegion;
 	
+	//Regeneration of visited areas
+	private Region visible_region = new Region();
+	bool visible_region_changed = false;
+	private float generation_timer = 0.0f;
+	
 	/*--------------------------------------------------------------------------*/
 	
 	void Start () 
@@ -42,20 +47,34 @@ public class WorldGrid : MonoBehaviour {
 	
 	void Update()
 	{
-		List<Chunk> visible_chunks = new List<Chunk>();
+		/*
+		generation_timer += Time.deltaTime;
+		//Regenerate chunks which arent visible
+		visible_region_changed = false;
 		foreach(Chunk chunk in chunks_list)
 		{
 			Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
-			if(!(screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
+			if((screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
 			{
-				visible_chunks.Add(chunk);
+				if(!visible_region.ContainsChunk(chunk))
+				{
+					chunk.Select();
+					visible_region.AddChunk(chunk);
+					visible_region_changed = true;
+				}
 			}
-			chunk.Deselect();
+			else
+			{
+				chunk.Deselect();
+				visible_region.RemoveChunk(chunk);
+			}
+			if(generation_timer > 3.0f) 
+			{
+				generation_timer = 0.0f;
+				visible_region.Repath();
+			}
 		}
-		foreach(Chunk chunk in visible_chunks)
-		{
-			chunk.Select();	
-		}
+		*/
 	}
 	
 	void FixedUpdate () 
@@ -247,8 +266,9 @@ public class WorldGrid : MonoBehaviour {
 		Path path = astar.solve(cells, start, end);	
 		applyPath(path);
 		//Debug.Log ("END----------------");
-		//Generate a 2nd path
 		
+		//Generate a 2nd path
+		/*
 		start = path.getRandomCell();
 		end = cells[Random.Range(0, cells.Count-1)];
 		start.setType(Cell.CellType.Path);
@@ -256,7 +276,7 @@ public class WorldGrid : MonoBehaviour {
 		astar = new AStar();
 		path = astar.solve(cells, start, end);	
 		applyPath(path);
-		
+		*/
 	}
 	
 	//Reset all chunks
