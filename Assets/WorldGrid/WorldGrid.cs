@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 public class WorldGrid : MonoBehaviour {
 	public Cell cellPrefab;
@@ -134,10 +135,9 @@ public class WorldGrid : MonoBehaviour {
 		{
 			//if(path != null) path.Animate();
 		}
-		
-		
-		//Regenerate chunks which arent visible (experimental)
+				
 		/*
+		//Regenerate chunks which arent visible (experimental)
 		Region visible_region = new Region();
 		Region invisible_region = new Region();
 		foreach(Chunk chunk in chunks_list)
@@ -156,6 +156,7 @@ public class WorldGrid : MonoBehaviour {
 		}
 		*/
 	}
+	
 	
 	public Chunk CreateChunk(int _i, int _j)
 	{
@@ -244,15 +245,35 @@ public class WorldGrid : MonoBehaviour {
 			foreach(Path generated_path in _region.GeneratePath(path))
 			{
 				_region.ApplyPath(generated_path);
-				//path.Append(generated_path);
+				path.Append(generated_path);
 			}
 		}
-	}	
+	}
 	public void RegenerateSelectedRegion()
 	{
 		RegenerateRegion(selectedRegion);
 	}
 	
+	//Threaded region regeneration(experimental)
+	public void RegenerateRegion_Threaded()
+	{
+		if(selectedRegion == null) return;
+		Thread thread = new Thread(new ThreadStart(FindRegionPaths_Threaded));
+		thread.Start();
+	}
+	private void FindRegionPaths_Threaded()
+	{
+		Debug.Log ("Thread Started");
+		foreach(Path path in paths)
+		{
+			foreach(Path generated_path in selectedRegion.GeneratePath(path))
+			{
+				//_region.ApplyPath(generated_path);
+				//path.Append(generated_path);
+			}
+		}
+		Debug.Log ("Thread Complete");
+	}
 	
 	/*--------------------------------------------------------------------------*/
 	
@@ -291,7 +312,7 @@ public class WorldGrid : MonoBehaviour {
 						{
 							path.Append(generated_path);
 							region.ApplyPath(path);
-							foreach(Cell cell in path.getCells()) cell.DetectModelType();
+							foreach(Cell cell in path.getCells()) cell.cell_GameObject.DetectModelType();
 						}
 					}
 				}

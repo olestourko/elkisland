@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class Region {
 	
 	private List<Chunk> chunks = new List<Chunk>();
+		
 	public Region()
 	{
 		
@@ -74,6 +75,7 @@ public class Region {
 		//ExistsIncomingPath();
 		return path;
 	}
+		
 	//Uses an existing path to generate a new path within the region.
 	public List<Path> GeneratePath(Path _path)
 	{	

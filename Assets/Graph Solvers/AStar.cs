@@ -76,8 +76,8 @@ public class AStar
 	
 	private float Distance(Cell _start, Cell _end)
 	{
-		float x = Mathf.Abs(_end.transform.position.x - _start.transform.position.x);
-		float z = Mathf.Abs(_end.transform.position.z - _start.transform.position.z);
+		float x = Mathf.Abs(_end.cell_GameObject.transform.position.x - _start.cell_GameObject.transform.position.x);
+		float z = Mathf.Abs(_end.cell_GameObject.transform.position.z - _start.cell_GameObject.transform.position.z);
 		return x + z;
 		
 	}

@@ -8,16 +8,17 @@ public class Chunk : MonoBehaviour {
 	public bool selected = false;
 	public bool regened = false; //temporary (used for camera redrawing)
 	
-	public Cell cellPrefab;
+	public Cell_GameObject cellPrefab;
 	private GUIText label;
 	
 	Cell[,] cells = new Cell[5,5];
 	List<Cell> cells_list = new List<Cell>();
+	List<Path> paths = new List<Path>();
 	public Chunk left;
 	public Chunk top;
 	public Chunk right;
 	public Chunk bottom;
-	private List<Path> paths = new List<Path>();
+
 	
 	/*Event firing when chunk is init'd*/
 	public event InitHandler Init;
@@ -76,15 +77,18 @@ public class Chunk : MonoBehaviour {
 		{
 			for(int j = 0; j < 5; j++)
 			{
-				Cell cell = Instantiate(cellPrefab) as Cell;
+				Cell_GameObject cell_GameObject = Instantiate(cellPrefab) as Cell_GameObject;
+				Cell cell = new Cell(cell_GameObject);
+				cell_GameObject.cell = cell;
+				
 				cells[i, j] = cell;
-				cell.transform.parent = this.transform;
-				cell.transform.position = transform.position + new Vector3(i, 0, j);
+				cell.cell_GameObject.transform.parent = this.transform;
+				cell.cell_GameObject.transform.position = transform.position + new Vector3(i, 0, j);
 				cell.cost = Random.Range(1, 4);
-				//cell.name = (i*5 + j).ToString();
-				cell.name = cell.cost + "";
+				//cell.cell_GameObject.name = (i*5 + j).ToString();
+				cell.cell_GameObject.name = cell.cost + "";
 				float c = (float)cell.cost/3;
-				cell.renderer.material.color = new Color(c, c, c);
+				cell.cell_GameObject.renderer.material.color = new Color(c, c, c);
 				cells_list.Add(cell);
 			}			
 		}
@@ -113,7 +117,7 @@ public class Chunk : MonoBehaviour {
 			{
 				Cell cell = cells[i, j];
 				cell.cost = Random.Range(1, 4);
-				cell.name = cell.cost + "";
+				cell.cell_GameObject.name = cell.cost + "";
 				cell.setType(Cell.CellType.Woods);
 			}			
 		}
@@ -127,7 +131,7 @@ public class Chunk : MonoBehaviour {
 	public void ApplyPath(Path _path)
 	{
 		//Debug.Log ("Chunk " + name + " applied path");
-		//paths = new List<Path>();
+		List<Path> paths = new List<Path>();
 		bool onPath = false;
 		Path localPath = null;
 		foreach(Cell cell in _path.getCells())
@@ -194,7 +198,7 @@ public class Chunk : MonoBehaviour {
 	{
 		foreach(Cell cell in cells_list)
 		{
-			cell.DetectModelType();	
+			cell.cell_GameObject.DetectModelType();	
 		}
 	}
 	

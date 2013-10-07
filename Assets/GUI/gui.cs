@@ -78,7 +78,8 @@ public class gui : MonoBehaviour {
 			}
 			else
 			{
-				worldGrid.RegenerateSelectedRegion();
+				worldGrid.RegenerateRegion_Threaded();
+				//worldGrid.RegenerateSelectedRegion();
 			}
 		}
 		
