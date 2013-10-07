@@ -43,39 +43,11 @@ public class WorldGrid : MonoBehaviour {
 	void Update()
 	{
 		t += Time.deltaTime;
-		if(t > 0.1f)
+		if(t > 1.0f)
 		{
 			FixedUpdate_1s();
 			t = 0.0f;
 		}
-		/*
-		generation_timer += Time.deltaTime;
-		//Regenerate chunks which arent visible
-		visible_region_changed = false;
-		foreach(Chunk chunk in chunks_list)
-		{
-			Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
-			if((screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
-			{
-				if(!visible_region.ContainsChunk(chunk))
-				{
-					chunk.Select();
-					visible_region.AddChunk(chunk);
-					visible_region_changed = true;
-				}
-			}
-			else
-			{
-				chunk.Deselect();
-				visible_region.RemoveChunk(chunk);
-			}
-			if(generation_timer > 3.0f) 
-			{
-				generation_timer = 0.0f;
-				visible_region.Repath();
-			}
-		}
-		*/
 	}
 	
 	void FixedUpdate () 
@@ -160,8 +132,29 @@ public class WorldGrid : MonoBehaviour {
 		//Animate path (experimental)
 		foreach(Path path in paths)
 		{
-			if(path != null) path.Animate();
+			//if(path != null) path.Animate();
 		}
+		
+		
+		//Regenerate chunks which arent visible (experimental)
+		/*
+		Region visible_region = new Region();
+		Region invisible_region = new Region();
+		foreach(Chunk chunk in chunks_list)
+		{
+			Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
+			if((screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
+			{
+				invisible_region.AddChunk(chunk);
+				invisible_region.Generate_IfNotRegened();
+				RegenerateRegion(invisible_region);
+			}
+			else
+			{
+				chunk.regened = false;
+			}
+		}
+		*/
 	}
 	
 	public Chunk CreateChunk(int _i, int _j)
@@ -204,32 +197,7 @@ public class WorldGrid : MonoBehaviour {
 		pendingChunks.Add(chunk);
 		return chunk;
 	}
-	
-	public void regenerateChunk(int _i, int _j)
-	{
-		int i = _i;
-		int j = _j;
 		
-		int size = kernel_view.GetSize();
-		int[,] kernel_array = kernel_view.GetArray();
-		
-		for(int k = -size/2; k <= size/2; k++)
-		{
-			for(int l = -size/2; l <= size/2; l++)
-			{
-				if(kernel_array[k+size/2, l+size/2] == 1)
-				{
-					if(chunks[i + k, j + l] != null)
-					{
-						chunks[i + k, j + l].regenerate();
-					}
-				}
-			}
-		}
-		generatePath();
-	}
-	
-	
 	/*--------------------------------------------------------------------------*/
 	/*Region Actions					               							*/
 	/*--------------------------------------------------------------------------*/
@@ -267,11 +235,24 @@ public class WorldGrid : MonoBehaviour {
 		selectedRegion.Deselect();
 	}
 	
-	public void RepathRegion()
+	public void RegenerateRegion(Region _region)
 	{
-		if(selectedRegion == null) return;
-		selectedRegion.Repath();
+		if(_region == null) return;
+		_region.Generate();
+		foreach(Path path in paths)
+		{
+			foreach(Path generated_path in _region.GeneratePath(path))
+			{
+				_region.ApplyPath(generated_path);
+				//path.Append(generated_path);
+			}
+		}
+	}	
+	public void RegenerateSelectedRegion()
+	{
+		RegenerateRegion(selectedRegion);
 	}
+	
 	
 	/*--------------------------------------------------------------------------*/
 	
@@ -294,59 +275,40 @@ public class WorldGrid : MonoBehaviour {
 				if(path != null) 
 				{
 					paths.Add(path);
+					region.ApplyPath(path);
 					gui.path_count = paths.Count;
 				}
 			}
 			else
 			{
-				region.GeneratePaths(paths);
+				//Attempt to extend all path into the region
+				foreach(Path path in paths)
+				{
+					//There may be more than one path generaed fo
+					foreach(Path generated_path in region.GeneratePath(path))
+					{
+						if(generated_path != null)
+						{
+							path.Append(generated_path);
+							region.ApplyPath(path);
+							foreach(Cell cell in path.getCells()) cell.DetectModelType();
+						}
+					}
+				}
 			}
 
 			previous_region = region;
-			//generatePath(); //Old, whole-map generation
 		}
 		//Update GUI
 		gui.chunk_count = chunks_list.Count;
 		gui.cell_count = chunks_list.Count * 5;
 	}
 	
-	private void generatePath()
-	{
-		//Debug.Log ("START----------------");
-		Reset();
-		
-		List<Cell> cells = getAllChunkCells();
-		Cell start = cells[0];
-		Cell end = cells[cells.Count-1];
-		//Cell start = cells[Random.Range(0, cells.Count-1)];
-		//Cell end = cells[Random.Range(0, cells.Count-1)];
-		start.setType(Cell.CellType.Path);
-		end.setType(Cell.CellType.Path);
-		
-		//Dijkstra dijkstra = new Dijkstra();
-		//Path path = dijkstra.solve(cells, start, end);
-		AStar astar = new AStar();
-		Path path = astar.solve(cells, start, end);	
-		applyPath(path);
-		//Debug.Log ("END----------------");
-		
-		//Generate a 2nd path
-		/*
-		start = path.getRandomCell();
-		end = cells[Random.Range(0, cells.Count-1)];
-		start.setType(Cell.CellType.Path);
-		end.setType(Cell.CellType.Path);
-		astar = new AStar();
-		path = astar.solve(cells, start, end);	
-		applyPath(path);
-		*/
-	}
-	
 	//Reset all chunks
 	private void Reset()
 	{
 		//Reset the blocks
-		foreach(Cell cell in getAllChunkCells())
+		foreach(Cell cell in GetAllChunkCells())
 		{
 			cell.setType(Cell.CellType.Woods);
 		}
@@ -354,7 +316,7 @@ public class WorldGrid : MonoBehaviour {
 	
 	}
 	
-	private void applyPath(Path _path)
+	private void ApplyPath(Path _path)
 	{
 		foreach(Chunk chunk in chunks_list)
 		{
@@ -362,14 +324,10 @@ public class WorldGrid : MonoBehaviour {
 		}	
 		
 		foreach(Chunk chunk in chunks_list) chunk.ApplyModels();
-		/* For each chunk where in which a cell from the path is within it, 
-		 * apply the path to that cell. The chunk will create its own internal
-		 * path object which will be used in region regeneration.
-		 */
 	}
 	
 	/*Deprecated*/
-	private List<Cell> getAllChunkCells()
+	private List<Cell> GetAllChunkCells()
 	{
 		List<Cell> cells_out = new List<Cell>();
 		foreach(Chunk chunk in chunks_list)

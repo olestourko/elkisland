@@ -6,6 +6,7 @@ public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
 	public bool selected = false;
+	public bool regened = false; //temporary (used for camera redrawing)
 	
 	public Cell cellPrefab;
 	private GUIText label;
@@ -104,6 +105,7 @@ public class Chunk : MonoBehaviour {
 	//To be merged with generate()
 	public void regenerate()
 	{
+		regened = true;
 		paths = new List<Path>();
 		for(int i = 0; i < 5; i++)
 		{

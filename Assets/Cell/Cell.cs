@@ -50,6 +50,12 @@ public class Cell : MonoBehaviour {
 	}
 	/*--------------------------------------------------------------------------*/
 	
+	public bool IsAdjacent(Cell _cell)
+	{
+		if(_cell == left || _cell == right || _cell == top || _cell == bottom) return true;
+		return false;
+	}
+	
 	// Use this for initialization
 	void Start () {
 	

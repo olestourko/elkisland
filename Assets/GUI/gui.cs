@@ -71,16 +71,14 @@ public class gui : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		if(command.Equals("regen"))
 		{
-			if(args.Count != 2) 
+			if(args.Count != 0) 
 			{
-				Debug.Log ("Usage: regen <x> <z>");
-				Debug.Log ("Regenerates an area with the chunk <x> <z> at the center.");
+				Debug.Log ("Usage: regen");
+				Debug.Log ("Regenerates the selected region");
 			}
 			else
 			{
-				int x = int.Parse(args[0]);
-				int z = int.Parse(args[1]);
-				worldGrid.regenerateChunk(x, z);
+				worldGrid.RegenerateSelectedRegion();
 			}
 		}
 		
@@ -109,19 +107,6 @@ public class gui : MonoBehaviour {
 			else
 			{
 				worldGrid.DeselectRegion();
-			}
-		}
-		
-		else if(command.Equals("repath"))
-		{
-			if(args.Count != 0)
-			{
-				Debug.Log ("Usage: repath");
-				Debug.Log ("Rebuilds paths for selected region.");
-			}
-			else
-			{
-				worldGrid.RepathRegion();
 			}
 		}
 	}
