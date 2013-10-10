@@ -50,39 +50,16 @@ public class Region {
 	{
 		foreach(Chunk chunk in chunks) chunk.generate();
 	}
-	public void Generate_IfNotRegened()
-	{
-		foreach(Chunk chunk in chunks) if(!chunk.generated) chunk.generate();
-	}
-	
+
 	//Generates a single random path in the region
 	public Path GeneratePath()
 	{
 		List<Cell> cells = GetCells();
 		Cell start = cells[0];
 		Cell end = cells[cells.Count-1];
-		//Cell start = cells[Random.Range(0, cells.Count-1)];
-		//Cell end = cells[Random.Range(0, cells.Count-1)];
-		start.setType(Cell.CellType.Path);
-		end.setType(Cell.CellType.Path);
-		AStar astar = new AStar();
-		Path path = astar.solve(cells, start, end);	
-		if(path != null) ApplyPath(path);
+		Path path = GeneratePath(start, end);
 		return path;
 	}
-	public Path GeneratePath(Cell _start)
-	{
-		List<Cell> cells = GetCells();
-		Cell end = cells[cells.Count-1];
-		//Cell start = cells[Random.Range(0, cells.Count-1)];
-		//Cell end = cells[Random.Range(0, cells.Count-1)];
-		_start.setType(Cell.CellType.Path);
-		end.setType(Cell.CellType.Path);
-		AStar astar = new AStar();
-		Path path = astar.solve(cells, _start, end);			
-		return path;
-	}
-		
 	//Uses an existing path to generate a new path within the region.
 	public List<Path> GeneratePath(Path _path)
 	{	
@@ -90,7 +67,7 @@ public class Region {
 		List<Cell> cells = this.GetCells();
 		if(this.ContainsPath(_path)) 
 		{
-			Debug.Log ("1: This region contains the path");
+			//Debug.Log ("1: This region contains the path");
 			bool on_path = false;
 			Cell start = null;
 			Cell end = null;
@@ -117,18 +94,19 @@ public class Region {
 		}
 		else
 		{
-			Debug.Log ("2: This region doesn't contain the path");
+			//Debug.Log ("2: This region doesn't contain the path");
 			//Check if path is on the border of the region. If so, generate it using its last point.	
 			Path path_out = null;
 			Cell path_start = _path.getStart();
 			Cell path_end = _path.getEnd();
+			Cell end = cells[cells.Count-1];
 			//Check start of path
 			foreach(Cell adjacent_cell in path_start.getNeighbors())
 			{
 				if(this.ContainsCell(adjacent_cell)) 
 				{
-					Debug.Log ("New region has an outgoing path");	
-					path_out = this.GeneratePath(adjacent_cell);
+					//Debug.Log ("New region has an outgoing path");	
+					path_out = this.GeneratePath(adjacent_cell, end);
 					paths_out.Add(path_out);
 					break;
 				}
@@ -138,8 +116,8 @@ public class Region {
 			{
 				if(this.ContainsCell(adjacent_cell))
 				{
-					Debug.Log ("New region has an incoming path");
-					path_out = this.GeneratePath(adjacent_cell);
+					//Debug.Log ("New region has an incoming path");
+					path_out = this.GeneratePath(adjacent_cell, end);
 					paths_out.Add(path_out);
 					break;
 				}
@@ -149,6 +127,7 @@ public class Region {
 	}
 	public Path GeneratePath(Cell _start, Cell _end)
 	{
+		//Cell end = cells[Random.Range(0, cells.Count-1)];
 		List<Cell> cells = GetCells();
 		AStar astar = new AStar();
 		Path path = astar.solve(cells, _start, _end);		

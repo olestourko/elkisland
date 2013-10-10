@@ -108,18 +108,18 @@ public class Cell_GameObject : MonoBehaviour {
 	
 	public void Redraw()
 	{
-		Color c = Color.white;		
+		Color c = new Color(0.25f, 0.1f, 0.0f, 1.0f);	
 		//Determine what the color is
 		switch(cell.cellType)
 		{
 			case Cell.CellType.Path:
-				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				c = new Color(0.05f, 0.01f, 0.0f, 1.0f);
 				break;
 			case Cell.CellType.Path_Start:
-				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				c = new Color(0.05f, 0.01f, 0.0f, 1.0f);
 				break;
 			case Cell.CellType.Path_End:
-				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				c = new Color(0.05f, 0.01f, 0.0f, 1.0f);
 				break;
 			case Cell.CellType.Woods:
 				float w = (float)cell.cost/3;
@@ -132,9 +132,9 @@ public class Cell_GameObject : MonoBehaviour {
 		//Tint color if selected
 		if(cell.selected)
 		{
-			c.r *= 0.5f;
-			c.g *= 0.5f;
-			c.b *= 0.5f;
+			c.r *= 1.25f;
+			c.g *= 1.25f;
+			c.b *= 1.25f;
 			c.g += 0.25f;
 		}
 		renderer.material.color = c;

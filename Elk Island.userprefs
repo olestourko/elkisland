@@ -1,33 +1,20 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Path\Path.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Camera\Topdown.cs">
     <Files>
       <File FileName="Assets\Path\Path.cs" Line="1" Column="1" />
       <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="1" Column="1" />
-      <File FileName="Assets\Graph Solvers\AStar.cs" Line="1" Column="1" />
-      <File FileName="Assets\GUI\gui.cs" Line="1" Column="1" />
       <File FileName="Assets\Region\Region.cs" Line="1" Column="1" />
+      <File FileName="Assets\Graph Solvers\AStar.cs" Line="1" Column="1" />
+      <File FileName="Assets\GUI\gui.cs" Line="123" Column="5" />
       <File FileName="Assets\Chunk\Chunk.cs" Line="1" Column="1" />
-      <File FileName="Assets\Cell\Cell.cs" Line="62" Column="3" />
+      <File FileName="Assets\Cell\Cell.cs" Line="1" Column="1" />
       <File FileName="Assets\Cell\Cell_GameObject.cs" Line="1" Column="1" />
+      <File FileName="Assets\Camera\Topdown.cs" Line="4" Column="21" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="Assembly-CSharp" expanded="True">
-            <Node name="Assets" expanded="True">
-              <Node name="Cell" expanded="True" />
-              <Node name="Chunk" expanded="True" />
-              <Node name="Graph Solvers" expanded="True" />
-              <Node name="GUI" expanded="True" />
-              <Node name="Path" expanded="True">
-                <Node name="Path.cs" selected="True" />
-              </Node>
-              <Node name="Region" expanded="True" />
-              <Node name="WorldGrid" expanded="True" />
-            </Node>
-          </Node>
-        </State>
+        <State expanded="True" selected="True" />
       </Pad>
       <Pad Id="ClassPad">
         <State expanded="True" selected="True" />

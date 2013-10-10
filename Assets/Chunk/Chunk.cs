@@ -6,14 +6,12 @@ public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
 	public bool selected = false;
-	public bool generated = false; //temporary (used for camera redrawing)
 	
 	public Cell_GameObject cellPrefab;
 	private GUIText label;
 	
 	Cell[,] cells = new Cell[5,5];
 	List<Cell> cells_list = new List<Cell>();
-	List<Path> paths = new List<Path>();
 	public Chunk left;
 	public Chunk top;
 	public Chunk right;
@@ -103,36 +101,11 @@ public class Chunk : MonoBehaviour {
 			}
 		}
 	}
-	
-	//To be merged with generate()
-	private void regenerate()
-	{
-		generated = true;
-		paths = new List<Path>();
-		for(int i = 0; i < 5; i++)
-		{
-			for(int j = 0; j < 5; j++)
-			{
-				Cell cell = cells[i, j];
-				cell.cost = Random.Range(1, 4);
-				//cell.cell_GameObject.name = cell.cost + "";
-				cell.setType(Cell.CellType.Woods);
-				cell.cell_GameObject.Redraw();
-			}			
-		}
-	}
-	
-	public void ClearLocalPaths()
-	{
-		paths = new List<Path>();	
-	}
-	
+		
 	public void ApplyPath(Path _path)
 	{
 		//Debug.Log ("Chunk " + name + " applied path");
-		List<Path> paths = new List<Path>();
 		bool onPath = false;
-		Path localPath = null;
 		foreach(Cell cell in _path.getCells())
 		{
 			//Is this the first cell within the chunk for this path?
@@ -142,8 +115,6 @@ public class Chunk : MonoBehaviour {
 				if(!onPath)
 				{
 					cell.setType(Cell.CellType.Path_Start);
-					localPath = new Path();
-					localPath.partOf = _path;
 					onPath = true;
 				}
 				else if(!this.hasCell(_path.getNext(cell)))
@@ -156,43 +127,10 @@ public class Chunk : MonoBehaviour {
 				{
 					cell.setType(Cell.CellType.Path);
 				}
-				localPath.addCell(cell);
-				cell.cell_GameObject.Redraw();
 			}		
 		}
-		if(localPath != null)
-		{
-			if(localPath.getLength() >= 2) 
-			{
-				//Debug.Log ("Chunk " + name + " added local path");
-				paths.Add(localPath);
-				//Debug.Log (localPath.partOf.getLength());
-			}
-		}
+	}
 		
-		GetWorldPaths();
-	}
-	
-	public List<Path> GetLocalPaths()
-	{
-		return paths;
-	}
-	
-	public List<Path> GetWorldPaths()
-	{
-		List<Path> worldPaths = new List<Path>();
-		foreach(Path path in paths)
-		{
-			if(!worldPaths.Contains(path.partOf)) 
-			{
-				//Debug.Log (path.partOf.getLength());
-				worldPaths.Add(path.partOf);
-			}
-		}
-		//Debug.Log ("Chunk " + name + " worldPaths: " + worldPaths.Count);
-		return worldPaths;
-	}
-	
 	public void Redraw()
 	{
 		foreach(Cell cell in cells_list) cell.cell_GameObject.Redraw();	

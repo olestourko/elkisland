@@ -47,7 +47,7 @@ public class WorldGrid : MonoBehaviour {
 	void Update()
 	{
 		t += Time.deltaTime;
-		if(t > 0.05f)
+		if(t > 2.0f)
 		{
 			FixedUpdate_1s();
 			t = 0.0f;
@@ -58,15 +58,14 @@ public class WorldGrid : MonoBehaviour {
 		{
 			if(!thread.IsAlive)
 			{
-				thread = null;
 				selected_region.Reset();
 				foreach(Path path in paths_threading_out)
 				{
-					Debug.Log (paths[0].Replace(path).ToString());
-					 paths[0].Replace(path);
+					paths[0].Replace(path);
 					selected_region.ApplyPath(path);
 				}
 				selected_region.Select();
+				thread = null;
 				//regen
 				//RegenerateRegion_Threaded();
 			}
@@ -155,28 +154,37 @@ public class WorldGrid : MonoBehaviour {
 		//Animate path (experimental)
 		foreach(Path path in paths)
 		{
-			if(path != null) path.Animate();
+			//if(path != null) path.Animate();
 		}
 				
-		/*
 		//Regenerate chunks which arent visible (experimental)
-		Region visible_region = new Region();
-		Region invisible_region = new Region();
-		foreach(Chunk chunk in chunks_list)
+		if(!IsRegenerating())
 		{
-			Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
-			if((screen_position.x < 0.0f || screen_position.x > 1.0f || screen_position.y < 0.0f || screen_position.y > 1.0f))
+			Region visible_region = new Region();
+			Region invisible_region = new Region();
+			foreach(Chunk chunk in chunks_list)
 			{
-				invisible_region.AddChunk(chunk);
-				invisible_region.Generate_IfNotRegened();
-				RegenerateRegion(invisible_region);
+				/*
+				//Vector3 screen_position = Camera.main.WorldToViewportPoint(chunk.transform.position);
+				Vector3 screen_position = Camera.allCameras[1].WorldToViewportPoint(chunk.transform.position);
+				if((screen_position.x < -5.0f || screen_position.x > 5.0f 
+				|| screen_position.y < -5.0f || screen_position.y > 5.0f 
+				|| screen_position.z < -5.0f))
+				{
+					invisible_region.AddChunk(chunk);
+				}
+				*/
+				Vector3 local_coordinates = Camera.allCameras[1].transform.InverseTransformPoint(chunk.transform.position + new Vector3(2.5f, 0.0f, 2.5f));
+				{
+					if(local_coordinates.z < -5.0f) invisible_region.AddChunk(chunk);	
+				}
+				
 			}
-			else
-			{
-				chunk.regened = false;
-			}
+			selected_region.Deselect();
+			selected_region = invisible_region;
+			selected_region.Select();
+			RegenerateRegion_Threaded();
 		}
-		*/
 	}
 	
 	
@@ -258,7 +266,7 @@ public class WorldGrid : MonoBehaviour {
 		selected_region.Deselect();
 	}
 	
-	
+	/*
 	public void RegenerateSelectedRegion()
 	{
 		RegenerateRegion(selected_region);
@@ -278,8 +286,13 @@ public class WorldGrid : MonoBehaviour {
 			}
 		}
 	}
+	*/
 	
 	//Threaded region regeneration(experimental)
+	private bool IsRegenerating()
+	{
+		return thread != null;	
+	}
 	public void RegenerateRegion_Threaded()
 	{
 		if(selected_region == null) return;
@@ -289,7 +302,7 @@ public class WorldGrid : MonoBehaviour {
 	}
 	private void FindRegionPaths_Threaded()
 	{
-		Debug.Log ("--- Path Thread Started");
+		//Debug.Log ("--- Path Thread Started");
 		//System.Threading.Thread.Sleep(1000);
 		paths_threading_out = new List<Path>();
 		foreach(Path path in paths)
@@ -299,7 +312,7 @@ public class WorldGrid : MonoBehaviour {
 				paths_threading_out.Add(generated_path);
 			}
 		}
-		Debug.Log ("--- Path Thread Complete");
+		//Debug.Log ("--- Path Thread Complete");
 	}
 	
 	/*--------------------------------------------------------------------------*/
@@ -320,12 +333,9 @@ public class WorldGrid : MonoBehaviour {
 			if(paths.Count == 0)
 			{
 				Path path = region.GeneratePath();
-				if(path != null) 
-				{
-					paths.Add(path);
-					region.ApplyPath(path);
-					gui.path_count = paths.Count;
-				}
+				paths.Add(path);
+				region.ApplyPath(path);
+				gui.path_count = paths.Count;
 			}
 			else
 			{
@@ -351,19 +361,7 @@ public class WorldGrid : MonoBehaviour {
 		gui.chunk_count = chunks_list.Count;
 		gui.cell_count = chunks_list.Count * 5;
 	}
-	
-	//Reset all chunks
-	private void Reset()
-	{
-		//Reset the blocks
-		foreach(Cell cell in GetAllChunkCells())
-		{
-			cell.setType(Cell.CellType.Woods);
-		}
-		foreach(Chunk chunk in chunks_list) chunk.ClearLocalPaths();
-	
-	}
-	
+		
 	private void ApplyPath(Path _path)
 	{
 		foreach(Chunk chunk in chunks_list)

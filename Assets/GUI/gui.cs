@@ -110,5 +110,20 @@ public class gui : MonoBehaviour {
 				worldGrid.DeselectRegion();
 			}
 		}
+		
+		else if(command.Equals("camera"))
+		{
+			if(args.Count != 1)
+			{
+				Debug.Log ("Usage: camera <camera #>");
+				Debug.Log ("Switches to the specified camera.");
+			}
+			else
+			{
+				
+				//Debug.Log (Camera.allCameras);
+			}
+		}
+		
 	}
 }
