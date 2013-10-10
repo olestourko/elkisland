@@ -16,7 +16,6 @@ public class WorldGrid : MonoBehaviour {
 	//public List<Cell> chunkCells = new List<Cell>();
 	private List<Chunk> pendingChunks = new List<Chunk>();
 	private List<Chunk> completedChunks = new List<Chunk>();
-	private Region previous_region;
 	public GameObject prescence;
 
 	//GUI
@@ -25,7 +24,7 @@ public class WorldGrid : MonoBehaviour {
 	public Kernel kernel_view = new Kernel5x5();
 	public Kernel kernel_generate = new Kernel9x9();
 	
-	private Region selectedRegion;
+	private Region selected_region;
 	
 	//Regeneration of visited areas
 	private Region visible_region = new Region();
@@ -35,6 +34,10 @@ public class WorldGrid : MonoBehaviour {
 	//Paths (experimental)
 	private float t = 0.0f;
 	private List<Path> paths = new List<Path>();
+	//Threading (experimental)
+	Thread thread = null;
+	private List<Path> paths_threading_out;
+	
 	
 	void Start () 
 	{
@@ -44,10 +47,29 @@ public class WorldGrid : MonoBehaviour {
 	void Update()
 	{
 		t += Time.deltaTime;
-		if(t > 1.0f)
+		if(t > 0.05f)
 		{
 			FixedUpdate_1s();
 			t = 0.0f;
+		}
+		
+		//Apply thread changes
+		if(thread != null)
+		{
+			if(!thread.IsAlive)
+			{
+				thread = null;
+				selected_region.Reset();
+				foreach(Path path in paths_threading_out)
+				{
+					Debug.Log (paths[0].Replace(path).ToString());
+					 paths[0].Replace(path);
+					selected_region.ApplyPath(path);
+				}
+				selected_region.Select();
+				//regen
+				//RegenerateRegion_Threaded();
+			}
 		}
 	}
 	
@@ -133,7 +155,7 @@ public class WorldGrid : MonoBehaviour {
 		//Animate path (experimental)
 		foreach(Path path in paths)
 		{
-			//if(path != null) path.Animate();
+			if(path != null) path.Animate();
 		}
 				
 		/*
@@ -226,53 +248,58 @@ public class WorldGrid : MonoBehaviour {
 				}
 			}
 		}
-		selectedRegion = region;
+		selected_region = region;
 		region.Select();
 	}
 	
 	public void DeselectRegion()
 	{
-		if(selectedRegion == null) return;
-		selectedRegion.Deselect();
+		if(selected_region == null) return;
+		selected_region.Deselect();
 	}
 	
+	
+	public void RegenerateSelectedRegion()
+	{
+		RegenerateRegion(selected_region);
+	}
 	public void RegenerateRegion(Region _region)
 	{
 		if(_region == null) return;
 		_region.Generate();
-		foreach(Path path in paths)
+		for(int i = 0; i < paths.Count; i++)
 		{
-			foreach(Path generated_path in _region.GeneratePath(path))
+			foreach(Path generated_path in _region.GeneratePath(paths[i]))
 			{
+				if(generated_path == null) Debug.Log ("Generated Path is null");
+				paths[i].Replace(generated_path);
 				_region.ApplyPath(generated_path);
-				path.Append(generated_path);
+				//Debug.Log (paths[0].Replace(paths[i]).ToString());
 			}
 		}
-	}
-	public void RegenerateSelectedRegion()
-	{
-		RegenerateRegion(selectedRegion);
 	}
 	
 	//Threaded region regeneration(experimental)
 	public void RegenerateRegion_Threaded()
 	{
-		if(selectedRegion == null) return;
-		Thread thread = new Thread(new ThreadStart(FindRegionPaths_Threaded));
+		if(selected_region == null) return;
+		selected_region.Generate();
+		thread = new Thread(new ThreadStart(FindRegionPaths_Threaded));
 		thread.Start();
 	}
 	private void FindRegionPaths_Threaded()
 	{
-		Debug.Log ("Thread Started");
+		Debug.Log ("--- Path Thread Started");
+		//System.Threading.Thread.Sleep(1000);
+		paths_threading_out = new List<Path>();
 		foreach(Path path in paths)
 		{
-			foreach(Path generated_path in selectedRegion.GeneratePath(path))
+			foreach(Path generated_path in selected_region.GeneratePath(path))
 			{
-				//_region.ApplyPath(generated_path);
-				//path.Append(generated_path);
+				paths_threading_out.Add(generated_path);
 			}
 		}
-		Debug.Log ("Thread Complete");
+		Debug.Log ("--- Path Thread Complete");
 	}
 	
 	/*--------------------------------------------------------------------------*/
@@ -284,11 +311,11 @@ public class WorldGrid : MonoBehaviour {
 		completedChunks.Add(_chunk);
 		if(pendingChunks.Count == 0)
 		{
-			if(previous_region != null) previous_region.Deselect();
+			if(selected_region != null) selected_region.Deselect();
 			Region region = new Region(completedChunks);
-			region.Select();
 			completedChunks = new List<Chunk>();
 			foreach(Chunk chunk in chunks_list) chunk.LinkCells();
+			region.Select();
 			//Generate paths within region
 			if(paths.Count == 0)
 			{
@@ -312,13 +339,13 @@ public class WorldGrid : MonoBehaviour {
 						{
 							path.Append(generated_path);
 							region.ApplyPath(path);
-							foreach(Cell cell in path.getCells()) cell.cell_GameObject.DetectModelType();
+							foreach(Cell cell in path.getCells()) cell.cell_GameObject.Redraw();
 						}
 					}
 				}
 			}
 
-			previous_region = region;
+			selected_region = region;
 		}
 		//Update GUI
 		gui.chunk_count = chunks_list.Count;
@@ -344,7 +371,7 @@ public class WorldGrid : MonoBehaviour {
 			chunk.ApplyPath(_path);	
 		}	
 		
-		foreach(Chunk chunk in chunks_list) chunk.ApplyModels();
+		foreach(Chunk chunk in chunks_list) chunk.Redraw();
 	}
 	
 	/*Deprecated*/

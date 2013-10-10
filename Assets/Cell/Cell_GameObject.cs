@@ -7,7 +7,6 @@ public class Cell_GameObject : MonoBehaviour {
 	
 	public Color originalColor = Color.white;
 	
-
 	//Models
 	public GameObject model_straight;
 	public GameObject model_turn;
@@ -23,12 +22,7 @@ public class Cell_GameObject : MonoBehaviour {
 	{
 		transform.GetChild(0).guiText.text = name;
 	}
-	
-	public void DestroyModel()
-	{
-		Destroy(model_instance);
-	}
-	
+		
 	private void InstantiateModel(GameObject _model)
 	{
 		model_instance = Instantiate(_model) as GameObject;
@@ -36,7 +30,7 @@ public class Cell_GameObject : MonoBehaviour {
 		model_instance.transform.parent = this.transform;
 	}
 	
-	public void DetectModelType()
+	private void DetectModelType()
 	{
 		Destroy(model_instance);
 		List<Cell.CellType> valid_cell_types = new List<Cell.CellType>();
@@ -110,6 +104,43 @@ public class Cell_GameObject : MonoBehaviour {
 				return;
 			}
 		}
+	}
+	
+	public void Redraw()
+	{
+		Color c = Color.white;		
+		//Determine what the color is
+		switch(cell.cellType)
+		{
+			case Cell.CellType.Path:
+				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				break;
+			case Cell.CellType.Path_Start:
+				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				break;
+			case Cell.CellType.Path_End:
+				c = new Color(0.25f, 0.0f, 0.0f, 1.0f);
+				break;
+			case Cell.CellType.Woods:
+				float w = (float)cell.cost/3;
+				c.r *= w;
+				c.g *= w;
+				c.b *= w;
+				break;
+		}
+		originalColor = c;
+		//Tint color if selected
+		if(cell.selected)
+		{
+			c.r *= 0.5f;
+			c.g *= 0.5f;
+			c.b *= 0.5f;
+			c.g += 0.25f;
+		}
+		renderer.material.color = c;
+		
+		//Spawn models
+		DetectModelType();
 	}
 	
 }

@@ -6,7 +6,7 @@ public class Chunk : MonoBehaviour {
 	
 	public bool isActive = true;
 	public bool selected = false;
-	public bool regened = false; //temporary (used for camera redrawing)
+	public bool generated = false; //temporary (used for camera redrawing)
 	
 	public Cell_GameObject cellPrefab;
 	private GUIText label;
@@ -28,7 +28,8 @@ public class Chunk : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		label = this.transform.GetChild(0).gameObject.guiText;
-		generate();
+		this.generate();
+		this.Redraw();
 		//link();		//Call moved to WorldGrid (since other chunks may not have loaded
 		Init(this);
 	}
@@ -51,23 +52,17 @@ public class Chunk : MonoBehaviour {
 		}
 		*/
 	}
-	
+		
 	public void Select()
 	{
 		selected = true;
-		foreach(Cell cell in getCells())
-		{
-			cell.Select();	
-		}
+		foreach(Cell cell in getCells()) cell.Select();	
 	}
 	
 	public void Deselect()
 	{
 		selected = false;
-		foreach(Cell cell in getCells())
-		{
-			cell.Deselect();
-		}
+		foreach(Cell cell in getCells()) cell.Deselect();
 	}
 	
 	public void generate()
@@ -77,19 +72,22 @@ public class Chunk : MonoBehaviour {
 		{
 			for(int j = 0; j < 5; j++)
 			{
-				Cell_GameObject cell_GameObject = Instantiate(cellPrefab) as Cell_GameObject;
-				Cell cell = new Cell(cell_GameObject);
-				cell_GameObject.cell = cell;
-				
-				cells[i, j] = cell;
-				cell.cell_GameObject.transform.parent = this.transform;
-				cell.cell_GameObject.transform.position = transform.position + new Vector3(i, 0, j);
+				Cell cell = cells[i, j];
+				if(cell == null)
+				{
+					Cell_GameObject cell_GameObject = Instantiate(cellPrefab) as Cell_GameObject;
+					cell = new Cell(cell_GameObject);
+					cell_GameObject.cell = cell;
+					cells[i, j] = cell;
+					cell.position = this.transform.position;
+					cell.cell_GameObject.transform.parent = this.transform;
+					cell.cell_GameObject.transform.position = transform.position + new Vector3(i, 0, j);
+					cells_list.Add(cell);
+				}
 				cell.cost = Random.Range(1, 4);
-				//cell.cell_GameObject.name = (i*5 + j).ToString();
-				cell.cell_GameObject.name = cell.cost + "";
-				float c = (float)cell.cost/3;
-				cell.cell_GameObject.renderer.material.color = new Color(c, c, c);
-				cells_list.Add(cell);
+				cell.cell_GameObject.name = (i*5 + j).ToString();
+				//cell.cell_GameObject.name = cell.cost + "";
+				cell.setType(Cell.CellType.Woods);
 			}			
 		}
 		
@@ -107,9 +105,9 @@ public class Chunk : MonoBehaviour {
 	}
 	
 	//To be merged with generate()
-	public void regenerate()
+	private void regenerate()
 	{
-		regened = true;
+		generated = true;
 		paths = new List<Path>();
 		for(int i = 0; i < 5; i++)
 		{
@@ -117,8 +115,9 @@ public class Chunk : MonoBehaviour {
 			{
 				Cell cell = cells[i, j];
 				cell.cost = Random.Range(1, 4);
-				cell.cell_GameObject.name = cell.cost + "";
+				//cell.cell_GameObject.name = cell.cost + "";
 				cell.setType(Cell.CellType.Woods);
+				cell.cell_GameObject.Redraw();
 			}			
 		}
 	}
@@ -158,7 +157,7 @@ public class Chunk : MonoBehaviour {
 					cell.setType(Cell.CellType.Path);
 				}
 				localPath.addCell(cell);
-				//Debug.Log("Chunk " + name + " added local path");
+				cell.cell_GameObject.Redraw();
 			}		
 		}
 		if(localPath != null)
@@ -194,14 +193,11 @@ public class Chunk : MonoBehaviour {
 		return worldPaths;
 	}
 	
-	public void ApplyModels()
+	public void Redraw()
 	{
-		foreach(Cell cell in cells_list)
-		{
-			cell.cell_GameObject.DetectModelType();	
-		}
+		foreach(Cell cell in cells_list) cell.cell_GameObject.Redraw();	
 	}
-	
+		
 	//--------------------------------------------------------------------------
 	// Get various sets of cells
 	//--------------------------------------------------------------------------

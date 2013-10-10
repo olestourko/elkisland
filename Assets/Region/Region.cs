@@ -25,6 +25,16 @@ public class Region {
 		chunks.Remove(_chunk);	
 	}
 	
+	//resets the entire region to woods
+	public void Reset()
+	{
+		foreach(Cell cell in this.GetCells()) 
+		{
+			cell.setType(Cell.CellType.Woods);
+			cell.cell_GameObject.Redraw();
+		}
+	}
+	
 	public void Select()
 	{
 		foreach(Chunk chunk in chunks) chunk.Select();
@@ -38,11 +48,11 @@ public class Region {
 	//Generates/Regenerates the region
 	public void Generate()
 	{
-		foreach(Chunk chunk in chunks) chunk.regenerate();
+		foreach(Chunk chunk in chunks) chunk.generate();
 	}
 	public void Generate_IfNotRegened()
 	{
-		foreach(Chunk chunk in chunks) if(!chunk.regened) chunk.regenerate();
+		foreach(Chunk chunk in chunks) if(!chunk.generated) chunk.generate();
 	}
 	
 	//Generates a single random path in the region
@@ -58,8 +68,6 @@ public class Region {
 		AStar astar = new AStar();
 		Path path = astar.solve(cells, start, end);	
 		if(path != null) ApplyPath(path);
-		
-		//ExistsIncomingPath();
 		return path;
 	}
 	public Path GeneratePath(Cell _start)
@@ -72,7 +80,6 @@ public class Region {
 		end.setType(Cell.CellType.Path);
 		AStar astar = new AStar();
 		Path path = astar.solve(cells, _start, end);			
-		//ExistsIncomingPath();
 		return path;
 	}
 		
@@ -104,14 +111,13 @@ public class Region {
 					on_path = false;
 					end = cell;
 					Path new_path = this.GeneratePath(start, end);
-					Debug.Log (new_path.getLength());
 					paths_out.Add(new_path);
 				}
 			}			
 		}
 		else
 		{
-			Debug.Log ("1: This region doesn't contain the path");
+			Debug.Log ("2: This region doesn't contain the path");
 			//Check if path is on the border of the region. If so, generate it using its last point.	
 			Path path_out = null;
 			Cell path_start = _path.getStart();
@@ -144,10 +150,8 @@ public class Region {
 	public Path GeneratePath(Cell _start, Cell _end)
 	{
 		List<Cell> cells = GetCells();
-		_start.setType(Cell.CellType.Path);
-		_end.setType(Cell.CellType.Path);
 		AStar astar = new AStar();
-		Path path = astar.solve(cells, _start, _end);			
+		Path path = astar.solve(cells, _start, _end);		
 		return path;
 	}
 	
@@ -180,7 +184,7 @@ public class Region {
 	public void ApplyPath(Path _path)
 	{
 		foreach(Chunk chunk in chunks) chunk.ApplyPath(_path);
-		foreach(Chunk chunk in chunks) chunk.ApplyModels();
+		foreach(Chunk chunk in chunks) chunk.Redraw();
 	}
 		
 	//Get chunks bordering this region (inside)

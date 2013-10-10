@@ -98,13 +98,43 @@ public class Path {
 		}
 		return false;
 	}
-	//Insert a path between the start and end of this one
-	public bool Insert(Path _path)
+	
+	//Replace a section of the path with a subpath
+	public bool Replace(Path _path)
 	{
-		List<Cell> new_cells = new List<Cell>();
 		Cell start = _path.getStart();
 		Cell end = _path.getEnd();
-		Cell current = null;
-		return false;
+		if(!(cells.Contains(start) && cells.Contains(end))) return false;
+		int start_index = cells.IndexOf(start);
+		int end_index = cells.IndexOf(end);
+		
+		List<Cell> first = new List<Cell>();
+		List<Cell> middle = _path.getCells();
+		List<Cell> last = new List<Cell>();
+		//swap start and end if they are out of order
+		if(start_index > end_index)
+		{
+			start_index = cells.IndexOf(end);
+			end_index = cells.IndexOf(start);
+			middle = new List<Cell>();
+			for(int i = _path.getCells().Count-1; i >= 0; i--) middle.Add(_path.getCells()[i]);
+		}
+		//Debug.Log (start_index + " - " + end_index);
+		
+		for(int i = 0; i < start_index; i++) first.Add(cells[i]);
+		for(int i = end_index+1; i < cells.Count; i++) last.Add(cells[i]);
+		
+		List<Cell> new_cells = new List<Cell>();
+		foreach(Cell cell in first) new_cells.Add(cell);
+		foreach(Cell cell in middle) new_cells.Add(cell);
+		foreach(Cell cell in last) new_cells.Add(cell);
+		cells = new_cells;
+		return true;
 	}
+	
+	public string ToString()
+	{
+		return "Path | start: " + this.getStart().cell_GameObject.name + ", end: " + this.getEnd().cell_GameObject.name;	
+	}
+
 }
