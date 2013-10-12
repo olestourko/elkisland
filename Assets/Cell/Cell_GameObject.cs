@@ -8,9 +8,13 @@ public class Cell_GameObject : MonoBehaviour {
 	public Color originalColor = Color.white;
 	
 	//Models
-	public GameObject model_straight;
+	public List<GameObject> model_straight;
 	public GameObject model_turn;
 	public GameObject model_instance;
+	
+	public List<GameObject> models_random;
+	public GameObject model_random;
+	public Material random_model_material;
 	
 	// Use this for initialization
 	void Start () {
@@ -32,6 +36,8 @@ public class Cell_GameObject : MonoBehaviour {
 	
 	private void DetectModelType()
 	{
+		GenerateRandomModels();
+		
 		Destroy(model_instance);
 		List<Cell.CellType> valid_cell_types = new List<Cell.CellType>();
 		valid_cell_types.Add(Cell.CellType.Path);
@@ -51,7 +57,8 @@ public class Cell_GameObject : MonoBehaviour {
 		{
 			if(valid_cell_types.Contains(cell.left.cellType) && valid_cell_types.Contains(cell.right.cellType))
 			{
-				InstantiateModel(model_straight);
+				GameObject model = model_straight[Random.Range(0, model_straight.Count)];
+				InstantiateModel(model);
 				return;
 			}
 		}
@@ -60,7 +67,8 @@ public class Cell_GameObject : MonoBehaviour {
 		{
 			if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.bottom.cellType))
 			{
-				InstantiateModel(model_straight);
+				GameObject model = model_straight[Random.Range(0, model_straight.Count)];
+				InstantiateModel(model);
 				model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
 				return;
 			}
@@ -103,12 +111,30 @@ public class Cell_GameObject : MonoBehaviour {
 				model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
 				return;
 			}
-		}
+		}		
 	}
+	
+	private void GenerateRandomModels()
+	{		
+		Destroy(model_random);
+		if(cell.cellType != Cell.CellType.Woods) return;
+		GameObject model_d = models_random[Random.Range(0, models_random.Count)];
+		model_random = Instantiate(model_d) as GameObject;
+		
+		float random_offset_x = Random.Range(-0.5f, 0.5f);
+		float random_offset_z = Random.Range(-0.5f, 0.5f);
+		
+		float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
+		model_random.transform.position = this.transform.position + new Vector3(random_offset_x, 0.0f, random_offset_z);
+		model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
+		model_random.transform.parent = this.transform;
+		model_random.renderer.material = random_model_material;
+	}
+	
 	
 	public void Redraw()
 	{
-		Color c = new Color(0.25f, 0.1f, 0.0f, 1.0f);	
+		Color c = new Color(0.10f, 0.15f, 0.075f, 1.0f);	
 		//Determine what the color is
 		switch(cell.cellType)
 		{

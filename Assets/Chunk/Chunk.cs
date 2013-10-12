@@ -206,6 +206,22 @@ public class Chunk : MonoBehaviour {
 		}
 	}
 	
+	public Cell GetCellClosestTo(Vector3 _position)
+	{
+		Cell closest_cell = null;
+		float closest_distance = 65536.0f;
+		foreach(Cell cell in cells_list)
+		{
+			float distance = Vector3.Distance(cell.cell_GameObject.transform.position, _position);
+			if(distance < closest_distance)
+			{
+				closest_cell = cell;
+				closest_distance = distance;
+			}
+		}
+		return closest_cell;
+	}
+	
 	//Experimental
 	/*
 	public void Destroy()

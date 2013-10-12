@@ -60,6 +60,14 @@ public class Region {
 		Path path = GeneratePath(start, end);
 		return path;
 	}
+	public Path GeneratePathRandom()
+	{		
+		List<Cell> cells = GetCells();
+		Cell start = cells[0];
+		Cell end = cells[Random.Range(0, cells.Count-1)];
+		Path path = GeneratePath(start, end);
+		return path;
+	}
 	//Uses an existing path to generate a new path within the region.
 	public List<Path> GeneratePath(Path _path)
 	{	
@@ -88,6 +96,7 @@ public class Region {
 					on_path = false;
 					end = cell;
 					Path new_path = this.GeneratePath(start, end);
+					new_path.partOf = _path;
 					paths_out.Add(new_path);
 				}
 			}			
@@ -127,7 +136,6 @@ public class Region {
 	}
 	public Path GeneratePath(Cell _start, Cell _end)
 	{
-		//Cell end = cells[Random.Range(0, cells.Count-1)];
 		List<Cell> cells = GetCells();
 		AStar astar = new AStar();
 		Path path = astar.solve(cells, _start, _end);		

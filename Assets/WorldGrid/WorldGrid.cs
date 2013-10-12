@@ -33,11 +33,13 @@ public class WorldGrid : MonoBehaviour {
 	
 	//Paths (experimental)
 	private float t = 0.0f;
-	private List<Path> paths = new List<Path>();
+	public List<Path> paths = new List<Path>();
 	//Threading (experimental)
 	Thread thread = null;
 	private List<Path> paths_threading_out;
 	
+	
+	public bool ready = false;
 	
 	void Start () 
 	{
@@ -47,9 +49,9 @@ public class WorldGrid : MonoBehaviour {
 	void Update()
 	{
 		t += Time.deltaTime;
-		if(t > 2.0f)
+		if(t > 1.0f)
 		{
-			FixedUpdate_1s();
+			//FixedUpdate_1s();
 			t = 0.0f;
 		}
 		
@@ -61,7 +63,7 @@ public class WorldGrid : MonoBehaviour {
 				selected_region.Reset();
 				foreach(Path path in paths_threading_out)
 				{
-					paths[0].Replace(path);
+					path.partOf.Replace(path);
 					selected_region.ApplyPath(path);
 				}
 				selected_region.Select();
@@ -174,7 +176,7 @@ public class WorldGrid : MonoBehaviour {
 					invisible_region.AddChunk(chunk);
 				}
 				*/
-				Vector3 local_coordinates = Camera.allCameras[1].transform.InverseTransformPoint(chunk.transform.position + new Vector3(2.5f, 0.0f, 2.5f));
+				Vector3 local_coordinates = Camera.allCameras[1].transform.InverseTransformPoint(chunk.transform.position);
 				{
 					if(local_coordinates.z < -5.0f) invisible_region.AddChunk(chunk);	
 				}
@@ -187,6 +189,14 @@ public class WorldGrid : MonoBehaviour {
 		}
 	}
 	
+	public Cell GetCellAt(Vector3 _position)
+	{
+		int i = (int)Mathf.Floor((_position.x + 0.5f) / 5) + 50;
+		int j = (int)Mathf.Floor((_position.z + 0.5f) / 5) + 50;
+		Chunk chunk = chunks[i, j];
+		Cell cell = chunk.GetCellClosestTo(_position);
+		return cell;
+	}
 	
 	public Chunk CreateChunk(int _i, int _j)
 	{
@@ -315,6 +325,16 @@ public class WorldGrid : MonoBehaviour {
 		//Debug.Log ("--- Path Thread Complete");
 	}
 	
+	private Path GenerateBranchPath(Path _path)
+	{
+		List<Cell> cells = _path.getCells();
+		Region region = new Region();
+		foreach(Chunk chunk in chunks_list) region.AddChunk(chunk);
+		Cell start = cells[Random.Range(0, cells.Count-1)];
+		Cell end = region.GetCells()[Random.Range(0, region.GetCells().Count-1)];
+		return region.GeneratePath(start, end);
+	}
+	
 	/*--------------------------------------------------------------------------*/
 	
 	
@@ -328,14 +348,21 @@ public class WorldGrid : MonoBehaviour {
 			Region region = new Region(completedChunks);
 			completedChunks = new List<Chunk>();
 			foreach(Chunk chunk in chunks_list) chunk.LinkCells();
-			region.Select();
+			//region.Select();
 			//Generate paths within region
 			if(paths.Count == 0)
 			{
 				Path path = region.GeneratePath();
 				paths.Add(path);
 				region.ApplyPath(path);
+				
+				path = GenerateBranchPath(path);
+				paths.Add (path);
+				region.ApplyPath(path);
+				
 				gui.path_count = paths.Count;
+				
+				ready = true;
 			}
 			else
 			{
