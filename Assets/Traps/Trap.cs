@@ -13,12 +13,12 @@ public class Trap : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+		Debug.DrawRay(transform.position, transform.forward, Color.green);
 	}
 	
-	public void Activate()
+	//Fill in in subclasses
+	public virtual void Activate()
 	{
-		int index = Random.Range(0, audioClips.Count-1);
-		audio.PlayOneShot(audioClips[index]);
+
 	}
 }

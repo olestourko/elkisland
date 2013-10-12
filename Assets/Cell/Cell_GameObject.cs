@@ -69,7 +69,8 @@ public class Cell_GameObject : MonoBehaviour {
 			{
 				GameObject model = model_straight[Random.Range(0, model_straight.Count)];
 				InstantiateModel(model);
-				model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
+				model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI / 2.0f) * 57.3f));
+				//model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
 				return;
 			}
 		}
@@ -79,7 +80,6 @@ public class Cell_GameObject : MonoBehaviour {
 			if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.left.cellType))
 			{
 				InstantiateModel(model_turn);
-				//model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
 				return;
 			}
 		}
@@ -88,7 +88,8 @@ public class Cell_GameObject : MonoBehaviour {
 			if(valid_cell_types.Contains(cell.bottom.cellType) && valid_cell_types.Contains(cell.right.cellType))
 			{
 				InstantiateModel(model_turn);
-				model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+				model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI) * 57.3f));
+				//model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
 				return;
 			}
 		}
@@ -107,7 +108,8 @@ public class Cell_GameObject : MonoBehaviour {
 			if(valid_cell_types.Contains(cell.bottom.cellType) && valid_cell_types.Contains(cell.left.cellType))
 			{
 				InstantiateModel(model_turn);
-				model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+				model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI) * 57.3f));
+				//model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
 				model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
 				return;
 			}

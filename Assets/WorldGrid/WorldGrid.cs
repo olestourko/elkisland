@@ -6,7 +6,6 @@ using System.Threading;
 public class WorldGrid : MonoBehaviour {
 	public Cell cellPrefab;
 	public int size;
-	private List<List<Cell>> cells = new List<List<Cell>>();
 
 	public float drawDistance = 30.0f;
 	public Chunk chunkPrefab;
@@ -256,7 +255,7 @@ public class WorldGrid : MonoBehaviour {
 		{
 			for(int l = -size/2; l <= size/2; l++)
 			{
-				if(kernel_view.GetArray()[k+size/2, l+size/2] == 1)
+				if(kernel_array[k+size/2, l+size/2] == 1)
 				{
 					if(chunks[i + k, j + l] != null)
 					{
