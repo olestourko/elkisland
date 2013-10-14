@@ -14,7 +14,7 @@ public class TrapManager : MonoBehaviour {
 		foreach(Trap trap in traps)
 		{
 			float distance = Vector3.Distance(_position, trap.transform.position);
-			if(trap as ShadowTrap != null) distance *= 0.75f;
+			if(trap as ShadowTrap != null) distance *= 0.6f;
 			if(distance < _distance) activated_traps.Add(trap);
 		}
 		foreach(Trap trap in activated_traps)

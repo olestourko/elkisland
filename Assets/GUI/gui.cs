@@ -11,6 +11,7 @@ public class gui : MonoBehaviour {
 	public int chunk_count;
 	public int cell_count;
 	public int path_count;
+	public string version_number;
 	
 	private WorldGrid worldGrid;
 	
@@ -46,6 +47,10 @@ public class gui : MonoBehaviour {
 		GUI.Label(new Rect (10, Screen.height - 25, 100, 20), "chunks: " + chunk_count, text);
 		GUI.Label(new Rect (10, Screen.height - 45, 100, 20), "cells: " + cell_count, text);
 		GUI.Label(new Rect (110, Screen.height - 25, 100, 20), "paths: " + path_count, text);
+		
+		//Version number
+		GUI.Box(new Rect (Screen.width - 150, Screen.height - 30, 150, 30), GUIContent.none);
+		GUI.Label(new Rect(Screen.width - 140, Screen.height - 25, 150, 30), version_number, text);
 	}
 	
 	private void processInput()
@@ -111,17 +116,16 @@ public class gui : MonoBehaviour {
 			}
 		}
 		
-		else if(command.Equals("camera"))
+		else if(command.Equals("quit"))
 		{
-			if(args.Count != 1)
+			if(args.Count != 0)
 			{
-				Debug.Log ("Usage: camera <camera #>");
-				Debug.Log ("Switches to the specified camera.");
+				Debug.Log ("Usage: quit");
+				Debug.Log ("Quits the application.");
 			}
 			else
 			{
-				
-				//Debug.Log (Camera.allCameras);
+				Application.Quit();
 			}
 		}
 		

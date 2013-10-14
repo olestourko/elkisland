@@ -11,7 +11,7 @@ public class BoltingAI : MonoBehaviour {
 		steering_behaviours = new SteeringBehaviors(this.gameObject);
 		if(target == null) return;
 		Vector3 target_vector = new Vector3(target.x, 0.0f, target.z);
-		Vector3 force = steering_behaviours.Seek(target_vector) * 5.0f;
+		Vector3 force = steering_behaviours.Seek(target_vector) * 1.5f;
 		rigidbody.velocity = force;
 	}
 	

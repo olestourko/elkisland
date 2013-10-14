@@ -52,7 +52,7 @@ public class ExperienceManager : MonoBehaviour {
 			else
 			{
 				BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
-				ai.transform.position = trap.transform.position;
+				ai.transform.position = trap.transform.position + Vector3.up * 0.15f;
 				ai.target = trap.transform.position + trap.transform.forward * 10.0f;
 			}
 		}
@@ -74,6 +74,7 @@ public class ExperienceManager : MonoBehaviour {
 		
 		
 		//Change lighting color if player off path
+		/*
 		if(worldGrid.GetCellAt(player.position).cellType == Cell.CellType.Woods)
 		{
 			RenderSettings.fogEndDistance = 1.5f;
@@ -88,5 +89,6 @@ public class ExperienceManager : MonoBehaviour {
 			RenderSettings.fogColor = new Color(0.0624f, 0.0624f, 0.0936f);
 			Camera.allCameras[1].backgroundColor = RenderSettings.fogColor;
 		}
+		*/
 	}
 }

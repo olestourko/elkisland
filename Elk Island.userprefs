@@ -1,28 +1,19 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ExperienceManager\ExperienceManager.cs">
-    <Files>
-      <File FileName="Assets\AI\StalkingAI.cs" Line="90" Column="41" />
-      <File FileName="Assets\AI\BoltingAI.cs" Line="14" Column="62" />
-      <File FileName="Assets\Traps\TrapManager.cs" Line="41" Column="25" />
-      <File FileName="Assets\Traps\ShadowTrap.cs" Line="8" Column="21" />
-      <File FileName="Assets\Traps\AudioTrap.cs" Line="8" Column="3" />
-      <File FileName="Assets\ExperienceManager\ExperienceManager.cs" Line="80" Column="61" />
-      <File FileName="Assets\Traps\Trap.cs" Line="16" Column="67" />
-    </Files>
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Assets" expanded="True">
               <Node name="AI" expanded="True" />
-              <Node name="Cell" expanded="True" />
-              <Node name="ExperienceManager" expanded="True">
-                <Node name="ExperienceManager.cs" selected="True" />
+              <Node name="Camera" expanded="True" />
+              <Node name="ExperienceManager" expanded="True" />
+              <Node name="GUI" expanded="True">
+                <Node name="gui.cs" selected="True" />
               </Node>
-              <Node name="Region" expanded="True" />
+              <Node name="Shaders" expanded="True" />
               <Node name="Traps" expanded="True" />
-              <Node name="WorldGrid" expanded="True" />
             </Node>
           </Node>
         </State>

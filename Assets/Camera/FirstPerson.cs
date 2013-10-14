@@ -8,32 +8,50 @@ public class FirstPerson : MonoBehaviour {
 	
 	public List<AudioClip> audioClips;
 	private float count = 0.0f;
-	
+
 	// Use this for initialization
-	void Start () {
-	
+	void Start () 
+	{
+		Screen.lockCursor = true;
 	}
 	
 	// Update is called once per frame
-	void Update () {
-	
+	void Update () 
+	{
+		if(Input.GetKeyDown(KeyCode.Q)) Screen.lockCursor = !Screen.lockCursor;
+		if(Screen.lockCursor)
+		{
+			float delta_x = Input.GetAxis("Mouse X");
+			float delta_y = Input.GetAxis("Mouse Y");
+			transform.Rotate(Vector3.up * delta_x * 50.0f * Time.deltaTime, Space.World);
+			transform.Rotate(transform.right * -delta_y * 50.0f * Time.deltaTime, Space.World);
+		}
 	}
 	
 	void FixedUpdate()
-	{
+	{	
 		if(Input.GetKey(KeyCode.W)) 
 		{
-			transform.position += transform.forward * factor;
+			transform.position += new Vector3(transform.forward.x, 0.0f, transform.forward.z).normalized * factor;
 			PlayWalkSound();
 		}
 		else if(Input.GetKey(KeyCode.S)) 
 		{
-			transform.position += -transform.forward * factor;
+			transform.position -= new Vector3(transform.forward.x, 0.0f, transform.forward.z).normalized * factor;
 			PlayWalkSound();
 		}
+		if(Input.GetKey(KeyCode.D)) 
+		{
+			transform.position += new Vector3(transform.right.x, 0.0f, transform.right.z).normalized * factor;
+			PlayWalkSound();
+		}
+		else if(Input.GetKey(KeyCode.A)) 
+		{
+			transform.position -= new Vector3(transform.right.x, 0.0f, transform.right.z).normalized * factor;
+			PlayWalkSound();
+		}
+		
 		count += Time.fixedDeltaTime;	
-		if(Input.GetKey(KeyCode.Q)) transform.Rotate(-Vector3.up * 2.0f);
-		else if(Input.GetKey(KeyCode.E)) transform.Rotate(Vector3.up * 2.0f);
 	}
 	
 	private void PlayWalkSound()
