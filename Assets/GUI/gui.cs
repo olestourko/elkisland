@@ -14,10 +14,12 @@ public class gui : MonoBehaviour {
 	public string version_number;
 	
 	private WorldGrid worldGrid;
+	private ExperienceManager experienceManager;
 	
 	void Start()
 	{
 		worldGrid = GameObject.Find("WorldGrid").GetComponent("WorldGrid") as WorldGrid;
+		experienceManager = GameObject.Find("ExperienceManager").GetComponent("ExperienceManager") as ExperienceManager;
 	}
 	
 	void OnGUI() 
@@ -126,6 +128,20 @@ public class gui : MonoBehaviour {
 			else
 			{
 				Application.Quit();
+			}
+		}
+		
+		else if(command.Equals("lighting"))
+		{
+			if(args.Count != 1)
+			{
+				Debug.Log ("Usage: lighting <lighting state id>");
+				Debug.Log ("Changes the enviornmental lighting");
+			}
+			else
+			{
+				int c = int.Parse(args[0]);
+				experienceManager.ChangeLighting(c);
 			}
 		}
 		

@@ -25,6 +25,7 @@ public class StalkingAI : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
+		renderer.material.SetFloat("_Alpha", 0.9f);
 		steering_behaviours = new SteeringBehaviors(this.gameObject);
 	}
 		
@@ -110,6 +111,7 @@ public class StalkingAI : MonoBehaviour {
 		
 		Vector3 target_vector = new Vector3(seek_target.x, 0.0f, seek_target.z);
 		Vector3 force = steering_behaviours.Seek(target_vector) * 20.0f;
+		force.y = 0.0f; //cut off the y-axis
 		rigidbody.AddForce(force * Time.fixedDeltaTime);
 		if(rigidbody.velocity.magnitude > 0.5f) rigidbody.velocity = Vector3.Normalize(rigidbody.velocity) * 0.5f;
 		distance_travelled += rigidbody.velocity.magnitude * Time.fixedDeltaTime;

@@ -33,6 +33,9 @@ public class WorldGrid : MonoBehaviour {
 	//Paths (experimental)
 	private float t = 0.0f;
 	public List<Path> paths = new List<Path>();
+	public Transform path_target;
+	public Cell path_target_cell;
+	
 	//Threading (experimental)
 	Thread thread = null;
 	private List<Path> paths_threading_out;
@@ -123,7 +126,6 @@ public class WorldGrid : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		/*Chunk set Active/Inactive				           							*/
 		/*--------------------------------------------------------------------------*/
-		/*
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
 		List<Chunk> chunks_to_deactivate = new List<Chunk>();
 		foreach(Chunk chunk in chunks_list)
@@ -138,16 +140,17 @@ public class WorldGrid : MonoBehaviour {
 				chunk.enabled = true;
 			}
 		}
-		while(chunks_to_deactivate.Count > 0)
+		//Note the check for paths length which allows the player to be moved to path start when game first loads
+		while(chunks_to_deactivate.Count > 0 && paths.Count > 0)
 		{
 			Chunk chunk = chunks_to_deactivate[0];
 			chunks_to_deactivate.Remove(chunk);
 			chunk.makeInactive();
-			chunk.enabled = false;
+			//chunk.enabled = false;
 			//chunks_list.Remove(chunk);
 			//Destroy(chunk.gameObject);
 		}
-		*/
+
 	}
 	
 	void FixedUpdate_1s()
@@ -316,7 +319,7 @@ public class WorldGrid : MonoBehaviour {
 		paths_threading_out = new List<Path>();
 		foreach(Path path in paths)
 		{
-			foreach(Path generated_path in selected_region.GeneratePath(path))
+			foreach(Path generated_path in selected_region.GeneratePath(path, null))
 			{
 				paths_threading_out.Add(generated_path);
 			}
@@ -351,13 +354,28 @@ public class WorldGrid : MonoBehaviour {
 			//Generate paths within region
 			if(paths.Count == 0)
 			{
-				Path path = region.GeneratePath();
-				paths.Add(path);
-				region.ApplyPath(path);
-				
+				/*
 				path = GenerateBranchPath(path);
 				paths.Add (path);
 				region.ApplyPath(path);
+				*/
+				
+				//Get the closest cell to the target
+				Chunk target_chunk = region.GetClosestChunk(path_target.position);
+				Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
+				target_cell.Select();
+				//Find a path to that cell
+				Path path = region.GeneratePath(region.GetCells()[0], target_cell);
+				paths.Add(path);
+				region.ApplyPath(path);
+				
+				//Set player position to start of path(to be changed later. also note that this will cause another region to generate.
+				Vector3 player_position = new Vector3(path.getStart().cell_GameObject.transform.position.x,
+					prescence.transform.position.y,
+					(path.getStart().cell_GameObject.transform.position.z));
+				
+				prescence.transform.position = player_position;
+				prescence.transform.LookAt(target_cell.cell_GameObject.transform.position);
 				
 				gui.path_count = paths.Count;
 				
@@ -365,11 +383,16 @@ public class WorldGrid : MonoBehaviour {
 			}
 			else
 			{
+				//Get the closest cell to the target
+				Chunk target_chunk = region.GetClosestChunk(path_target.position);
+				Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
+				target_cell.Select();
+				
 				//Attempt to extend all path into the region
 				foreach(Path path in paths)
 				{
 					//There may be more than one path generaed fo
-					foreach(Path generated_path in region.GeneratePath(path))
+					foreach(Path generated_path in region.GeneratePath(path, target_cell))
 					{
 						if(generated_path != null)
 						{

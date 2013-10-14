@@ -14,9 +14,13 @@ public class ExperienceManager : MonoBehaviour {
 	private List<StalkingAI> stalkingAIs = new List<StalkingAI>();
 	
 	//Lighting
+	private LightingState lighting_current;
+	private LightingState lighting_to;
+	
 	private LightingState lighting_0;
 	private LightingState lighting_1;
 	private LightingState lighting_2;
+	private LightingState lighting_3;
 	private float count = 0.0f;
 	public GameObject sky;
 	
@@ -46,8 +50,20 @@ public class ExperienceManager : MonoBehaviour {
 			//new Color(0.156f, 0.117f, 0.176f),
 			0.2f
 		);
+		//completely visible (debug)
+		lighting_3 = new LightingState(
+			new Color(1.0f, 1.0f, 1.0f),
+			new Color(1.0f, 1.0f, 1.0f),
+			new Color(1.0f, 1.0f, 1.0f),
+			//new Color(0.156f, 0.117f, 0.176f),
+			0.0f
+		);
+		
+		
 		lighting_2.sky_factor = 0.2f;
-		//ApplyLightingState(lighting_2);
+		
+		lighting_current = lighting_0;
+		TweenLightingState(lighting_1);
 	}
 	
 	// Update is called once per frame
@@ -56,8 +72,8 @@ public class ExperienceManager : MonoBehaviour {
 		//Blend lighting
 		if(count <= 1.0f)
 		{
-			LightingState blended = lighting_0.Blend(lighting_1, count);
-			ApplyLightingState(blended);
+			lighting_current = lighting_current.Blend(lighting_to, count);
+			ApplyLightingState(lighting_current);
 			count += Time.deltaTime * 0.5f;
 		}
 		
@@ -117,21 +133,38 @@ public class ExperienceManager : MonoBehaviour {
 		/*
 		if(worldGrid.GetCellAt(player.position).cellType == Cell.CellType.Woods)
 		{
-			RenderSettings.fogEndDistance = 1.5f;
-			RenderSettings.ambientLight = new Color(0.25f, 0.25f, 0.25f);
-			RenderSettings.fogColor = new Color(0.0312f, 0.0312f, 0.0468f);
-			Camera.allCameras[1].backgroundColor = RenderSettings.fogColor;
+			
 		}
 		else
 		{
-			RenderSettings.fogEndDistance = 2.5f;
-			RenderSettings.ambientLight = new Color(1.0f, 1.0f, 1.0f);
-			RenderSettings.fogColor = new Color(0.0624f, 0.0624f, 0.0936f);
-			Camera.allCameras[1].backgroundColor = RenderSettings.fogColor;
+			
 		}
 		*/
 	}
 	
+	//Lighting
+	
+	public void ChangeLighting(int _id)
+	{
+		switch(_id)
+		{
+		case 0:
+			TweenLightingState(lighting_0);
+			break;
+		case 1:
+			TweenLightingState(lighting_1);
+			break;
+		case 2:
+			TweenLightingState(lighting_2);
+			break;
+		}
+	}
+	
+	private void TweenLightingState(LightingState _lightingState)
+	{
+		count = 0.0f;	
+		lighting_to = _lightingState;
+	}
 	private void ApplyLightingState(LightingState _lightingState)
 	{
 		RenderSettings.ambientLight = _lightingState.ambient_color;

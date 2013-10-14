@@ -71,6 +71,7 @@ public class AStar
 			current = current.AStar_Parent;
 		}
 		path.addCell(current);
+		path.getCells().Reverse();
 		return path;
 	}
 	

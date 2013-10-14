@@ -69,7 +69,8 @@ public class Region {
 		return path;
 	}
 	//Uses an existing path to generate a new path within the region.
-	public List<Path> GeneratePath(Path _path)
+	//Use _end if the path doesn't continue out of the region
+	public List<Path> GeneratePath(Path _path, Cell _end)
 	{	
 		List<Path> paths_out = new List<Path>();
 		List<Cell> cells = this.GetCells();
@@ -103,19 +104,18 @@ public class Region {
 		}
 		else
 		{
-			//Debug.Log ("2: This region doesn't contain the path");
+			Debug.Log ("2: This region doesn't contain the path");
 			//Check if path is on the border of the region. If so, generate it using its last point.	
 			Path path_out = null;
 			Cell path_start = _path.getStart();
 			Cell path_end = _path.getEnd();
-			Cell end = cells[cells.Count-1];
 			//Check start of path
 			foreach(Cell adjacent_cell in path_start.getNeighbors())
 			{
 				if(this.ContainsCell(adjacent_cell)) 
 				{
 					//Debug.Log ("New region has an outgoing path");	
-					path_out = this.GeneratePath(adjacent_cell, end);
+					path_out = this.GeneratePath(adjacent_cell, _end);
 					paths_out.Add(path_out);
 					break;
 				}
@@ -126,7 +126,7 @@ public class Region {
 				if(this.ContainsCell(adjacent_cell))
 				{
 					//Debug.Log ("New region has an incoming path");
-					path_out = this.GeneratePath(adjacent_cell, end);
+					path_out = this.GeneratePath(adjacent_cell, _end);
 					paths_out.Add(path_out);
 					break;
 				}
@@ -233,5 +233,21 @@ public class Region {
 			if(cells.Contains(cell)) return true;
 		}
 		return false;
+	}
+	
+	public Chunk GetClosestChunk(Vector3 _position)
+	{
+		Chunk chunk_out = null;
+		float closest_distance = 65536.0f;
+		foreach(Chunk chunk in chunks)
+		{
+			float distance = (chunk.transform.position - _position).magnitude;
+			if(closest_distance > distance)
+			{
+				chunk_out = chunk;
+				closest_distance = distance;
+			}
+		}
+		return chunk_out;
 	}
 }

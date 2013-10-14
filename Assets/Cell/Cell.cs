@@ -75,5 +75,4 @@ public class Cell {
 		selected = false;
 		cell_GameObject.Redraw();
 	}
-	
 }
