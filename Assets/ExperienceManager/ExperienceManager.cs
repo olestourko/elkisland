@@ -13,14 +13,54 @@ public class ExperienceManager : MonoBehaviour {
 	
 	private List<StalkingAI> stalkingAIs = new List<StalkingAI>();
 	
-	// Use this for initialization
-	void Start () {
+	//Lighting
+	private LightingState lighting_0;
+	private LightingState lighting_1;
+	private LightingState lighting_2;
+	private float count = 0.0f;
+	public GameObject sky;
 	
+	// Use this for initialization
+	void Start () 
+	{
+		//black
+		lighting_0 = new LightingState(
+			new Color(0.0f, 0.0f, 0.0f),
+			new Color(0.0f,  0.0f, 0.0f),
+			new Color(0.0f,  0.0f, 0.0f),
+			0.2f
+		);
+		lighting_0.sky_factor = 0.0f;
+		//blue-green
+		lighting_1 = new LightingState(
+			new Color(0.184f, 0.199f, 0.199f),		//ambient
+			new Color(0.117f,  0.293f, 0.293f),		//fog
+			new Color(0.117f,  0.293f, 0.293f),		//sky
+			0.2f
+		);
+		//dark
+		lighting_2 = new LightingState(
+			new Color(0.098f, 0.098f, 0.098f),
+			new Color(0.059f, 0.059f, 0.059f),
+			new Color(0.059f, 0.059f, 0.059f),
+			//new Color(0.156f, 0.117f, 0.176f),
+			0.2f
+		);
+		lighting_2.sky_factor = 0.2f;
+		//ApplyLightingState(lighting_2);
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
+		//Blend lighting
+		if(count <= 1.0f)
+		{
+			LightingState blended = lighting_0.Blend(lighting_1, count);
+			ApplyLightingState(blended);
+			count += Time.deltaTime * 0.5f;
+		}
+		
 		//Generate traps
 		if(worldGrid.ready)
 		{
@@ -90,5 +130,15 @@ public class ExperienceManager : MonoBehaviour {
 			Camera.allCameras[1].backgroundColor = RenderSettings.fogColor;
 		}
 		*/
+	}
+	
+	private void ApplyLightingState(LightingState _lightingState)
+	{
+		RenderSettings.ambientLight = _lightingState.ambient_color;
+		RenderSettings.fogColor = _lightingState.fog_color;
+		RenderSettings.fogDensity = _lightingState.fog_density;
+		Camera.allCameras[1].backgroundColor = _lightingState.fog_color;
+		sky.renderer.material.SetColor("_Color", _lightingState.sky_color);
+		sky.renderer.material.SetFloat("_Factor", _lightingState.sky_factor);
 	}
 }

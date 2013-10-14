@@ -1,25 +1,16 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\GUI\gui.cs">
-    <Files>
-      <File FileName="Assets\Shaders\SkyShader.shader" Line="27" Column="40" />
-      <File FileName="Assets\Shaders\Basic.shader" Line="9" Column="14" />
-      <File FileName="Temp\Compiled-Skybox.shader" Line="14" Column="11" />
-      <File FileName="Assets\GUI\gui.cs" Line="53" Column="65" />
-    </Files>
+  <MonoDevelop.Ide.Workbench>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Assets" expanded="True">
-              <Node name="AI" expanded="True" />
-              <Node name="Camera" expanded="True" />
-              <Node name="ExperienceManager" expanded="True" />
-              <Node name="GUI" expanded="True">
-                <Node name="gui.cs" selected="True" />
+              <Node name="ExperienceManager" expanded="True">
+                <Node name="Lighting" expanded="True">
+                  <Node name="LightingState.cs" selected="True" />
+                </Node>
               </Node>
-              <Node name="Shaders" expanded="True" />
-              <Node name="Traps" expanded="True" />
             </Node>
           </Node>
         </State>

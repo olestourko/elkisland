@@ -52,7 +52,7 @@ public class TrapManager : MonoBehaviour {
 			random_number = Random.Range(0, 11);
 			Trap trap = null;
 			
-			if(random_number < 1) trap = Instantiate(audio_trap_prefab) as AudioTrap;
+			if(random_number < 7) trap = Instantiate(audio_trap_prefab) as AudioTrap;
 			else trap = Instantiate(shadow_trap_prefab) as ShadowTrap;
 
  			

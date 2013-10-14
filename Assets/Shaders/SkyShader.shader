@@ -1,5 +1,11 @@
 ﻿Shader "SkyShader" {
 
+	Properties
+	{
+		_Color("Color", Color) = (30.0, 75.0, 75.0, 1.0)
+		_Factor("0-1, the higher the brighter", Float) = 1.0
+	}
+	
 	SubShader 
 	{
 		//Tags { "Queue"="Background" "RenderType"="Background" }
@@ -8,6 +14,9 @@
 			Cull Front
 			Fog { Mode Off }
 			CGPROGRAM
+			
+			uniform float4 _Color;
+			uniform float _Factor;
 			
 			#pragma vertex vert
 			#pragma fragment frag
@@ -22,7 +31,8 @@
 			{
 				vertexOutput output;
 				output.pos = mul(UNITY_MATRIX_MVP, vertexPos);
-				float4 col = float4(0.118, 0.294, 0.294, 1.0);
+				//float4 col = float4(0.118, 0.294, 0.294, 1.0);
+				float4 col = _Color;
 				
 				float rg_offset = vertexPos.y * 1.5;
 				float b_offset = rg_offset * 0.5;
@@ -32,10 +42,10 @@
 					rg_offset = 0.9;
 					b_offset = 0.45;
 				}
-				
-				col.r += rg_offset;
-				col.g += rg_offset;
-				col.b += b_offset;
+				//col = col * _Factor;
+				col.r += rg_offset * _Factor;
+				col.g += rg_offset * _Factor;
+				col.b += b_offset * _Factor;
 
 				output.col = col;
 				//output.col = float4(vertexPos.y, vertexPos.y, vertexPos.y, 1.0);
