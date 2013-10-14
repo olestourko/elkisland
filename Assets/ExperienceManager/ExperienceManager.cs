@@ -52,7 +52,7 @@ public class ExperienceManager : MonoBehaviour {
 			else
 			{
 				BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
-				ai.transform.position = trap.transform.position + Vector3.up * 0.15f;
+				ai.transform.position = trap.transform.position + (Vector3.up * 0.11f) + (trap.transform.forward * 0.75f);
 				ai.target = trap.transform.position + trap.transform.forward * 10.0f;
 			}
 		}

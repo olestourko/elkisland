@@ -1,31 +1,12 @@
 ﻿Shader "Cg basic shader"
 {
-	SubShader
+	Properties
 	{
-		//Main pass
-		Pass
-		{
-			Cull Back
-			ZWrite Off
-			CGPROGRAM
-			
-			#pragma vertex vert
-			#pragma fragment frag
-			
-			float4 vert(float4 vertexPos : POSITION) : SV_POSITION
-			{
-				return mul(UNITY_MATRIX_MVP, vertexPos);
-			}
-			
-			float4 frag() : COLOR
-			{
-				discard;
-				return float4(1.0, 0.5, 0.0, 1.0);
-			}
-			ENDCG
-		}
-	
-	
+		_Alpha("Alpha", Float) = 0.0
+	}
+
+	SubShader
+	{	
 		//Transparent Pass
 		Tags { "Queue" = "Transparent" }
 		Pass
@@ -35,38 +16,46 @@
 			//ZWrite Off
 			CGPROGRAM
 			
+			uniform float _Alpha;
+			
 			#pragma vertex vert
 			#pragma fragment frag
+			
+			
+			struct vertexInput
+			{
+				float4 vertex : POSITION;
+				float3 normal : NORMAL;
+			};
 			
 			struct vertexOutput
 			{
 				float4 pos : SV_POSITION;
-				float4 col : TEXCOORD0;
+				float3 normal : TEXCOORD0;
+				float3 viewDir: TEXCOORD1;
 			};
 			
-			vertexOutput vert(float4 vertexPos : POSITION)
+			vertexOutput vert(vertexInput input)
 			{
 				vertexOutput output;
-				float4 factor = float4(4.0, 4.0, 4.0, 1.0);
-				float4 pos = mul(UNITY_MATRIX_MVP, vertexPos * factor);
-				float4 original_pos = mul(UNITY_MATRIX_MVP, vertexPos);
-				output.col = original_pos - pos;
-				output.pos = pos;
+				
+				float4x4 modelMatrix = _Object2World;
+				float4x4 modelMatrixInverse = _World2Object;
+				output.normal = normalize(float3(
+					mul(float4(input.normal, 0.0), modelMatrixInverse)));
+				output.viewDir = normalize(_WorldSpaceCameraPos
+					- float3(mul(modelMatrix, input.vertex)));
+				output.pos = mul(UNITY_MATRIX_MVP, input.vertex);
 				return output;
 			}
 			
 			float4 frag(vertexOutput input) : COLOR
-			{
-				//get distance from "real" vertex
-				float alpha = sqrt(
-					(input.col.x * input.col.x) +
-					(input.col.y * input.col.y) +
-					(input.col.z * input.col.z)
-					) * 2.65;
-				alpha = pow(alpha, 30);
-				//float alpha = input.pos - input.original_pos;
-				return float4(0.064, 0.064, 0.0936, 1/alpha);
-				//return float4(alpha, alpha, alpha, 1.0);
+			{			
+				float3 normalDirection = normalize(input.normal);
+				float3 viewDirection = normalize(input.viewDir);
+				float alpha = dot(viewDirection, normalDirection);
+				alpha = pow(alpha, 10.0) * _Alpha;
+				return float4(0.0, 0.0, 0.0, alpha);
 			}
 			
 			ENDCG
