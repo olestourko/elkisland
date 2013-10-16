@@ -375,7 +375,7 @@ public class WorldGrid : MonoBehaviour {
 					(path.getStart().cell_GameObject.transform.position.z));
 				
 				prescence.transform.position = player_position;
-				prescence.transform.LookAt(target_cell.cell_GameObject.transform.position);
+				//prescence.transform.LookAt(target_cell.cell_GameObject.transform.position);
 				
 				gui.path_count = paths.Count;
 				

@@ -63,7 +63,7 @@ public class ExperienceManager : MonoBehaviour {
 		lighting_2.sky_factor = 0.2f;
 		
 		lighting_current = lighting_0;
-		TweenLightingState(lighting_1);
+		TweenLightingState(lighting_3);
 	}
 	
 	// Update is called once per frame
@@ -74,7 +74,7 @@ public class ExperienceManager : MonoBehaviour {
 		{
 			lighting_current = lighting_current.Blend(lighting_to, count);
 			ApplyLightingState(lighting_current);
-			count += Time.deltaTime * 0.5f;
+			count += Time.deltaTime * 0.25f;
 		}
 		
 		//Generate traps
@@ -140,6 +140,10 @@ public class ExperienceManager : MonoBehaviour {
 			
 		}
 		*/
+		
+		//Keep sky moving with player
+		Vector3 sky_offset = Vector3.forward * 10.0f;
+		sky.transform.position = player.transform.position + sky_offset;
 	}
 	
 	//Lighting

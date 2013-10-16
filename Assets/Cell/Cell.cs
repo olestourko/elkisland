@@ -28,6 +28,7 @@ public class Cell {
 	public float g = 0;
 	public float f = 65536;
 	public float h = 0;
+	public int cost = 1;
 	//for threading
 	public Vector3 position;
 	
@@ -35,11 +36,6 @@ public class Cell {
 	{
 		cell_GameObject = _cell_GameObject;
 	}
-	
-	/*--------------------------------------------------------------------------*/
-	/*For Dijkstra shortest path solver (to be moved)							*/
-	/*--------------------------------------------------------------------------*/
-	public int cost = 1;
 	
 	public List<Cell> getNeighbors()
 	{

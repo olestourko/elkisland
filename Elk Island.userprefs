@@ -1,14 +1,25 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Chunk\Mesh Chunk\MeshChunk.cs">
+    <Files>
+      <File FileName="Assets\ExperienceManager\ExperienceManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="1" Column="1" />
+      <File FileName="Assets\Cell\Cell.cs" Line="39" Column="2" />
+      <File FileName="Assets\Chunk\Chunk.cs" Line="13" Column="2" />
+      <File FileName="Assets\Cell\Cell_GameObject.cs" Line="153" Column="31" />
+      <File FileName="Assets\Chunk\Mesh Chunk\MeshChunk.cs" Line="69" Column="59" />
+      <File FileName="Assets\Chunk\Mesh Chunk\Triangle.cs" Line="11" Column="17" />
+      <File FileName="Assets\Chunk\Mesh Chunk\Quad.cs" Line="5" Column="2" />
+    </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Assets" expanded="True">
-              <Node name="ExperienceManager" expanded="True">
-                <Node name="Lighting" expanded="True">
-                  <Node name="LightingState.cs" selected="True" />
+              <Node name="Cell" expanded="True" />
+              <Node name="Chunk" expanded="True">
+                <Node name="Mesh Chunk" expanded="True">
+                  <Node name="MeshChunk.cs" selected="True" />
                 </Node>
               </Node>
             </Node>
