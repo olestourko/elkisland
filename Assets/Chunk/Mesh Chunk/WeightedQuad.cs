@@ -14,4 +14,9 @@ public class WeightedQuad : Quad {
 	{
 		
 	}
+	
+	public float GetAverageWeight()
+	{
+		return (vertex_1_weight + vertex_2_weight + vertex_3_weight + vertex_4_weight) / 4.0f;
+	}
 }

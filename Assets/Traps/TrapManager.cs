@@ -56,8 +56,8 @@ public class TrapManager : MonoBehaviour {
 			else trap = Instantiate(shadow_trap_prefab) as ShadowTrap;
 
  			
-			trap.transform.position = cell_spawn.cell_GameObject.transform.position;
-			Vector3 trap_forward = Vector3.Normalize(cell.cell_GameObject.transform.position - cell_spawn.cell_GameObject.transform.position);
+			trap.transform.position = cell_spawn.position;
+			Vector3 trap_forward = Vector3.Normalize(cell.position - cell_spawn.position);
 			trap.transform.forward = trap_forward;
 			trap.transform.parent = this.transform;
 			traps.Add(trap);

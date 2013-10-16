@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 public class Region {
 	
-	private List<Chunk> chunks = new List<Chunk>();
+	private List<MeshChunk> chunks = new List<MeshChunk>();
 		
 	public Region()
 	{
 		
 	}
-	public Region(List<Chunk> _chunks)
+	public Region(List<MeshChunk> _chunks)
 	{
-		foreach(Chunk chunk in _chunks) chunks.Add(chunk);
+		foreach(MeshChunk chunk in _chunks) chunks.Add(chunk);
 	}
 		
-	public void AddChunk(Chunk _chunk)
+	public void AddChunk(MeshChunk _chunk)
 	{
 		if(!chunks.Contains(_chunk)) chunks.Add(_chunk);
 	}
 	
-	public void RemoveChunk(Chunk _chunk)
+	public void RemoveChunk(MeshChunk _chunk)
 	{
 		chunks.Remove(_chunk);	
 	}
@@ -37,18 +37,18 @@ public class Region {
 	
 	public void Select()
 	{
-		foreach(Chunk chunk in chunks) chunk.Select();
+		foreach(MeshChunk chunk in chunks) chunk.Select();
 	}
 	
 	public void Deselect()
 	{
-		foreach(Chunk chunk in chunks) chunk.Deselect();
+		foreach(MeshChunk chunk in chunks) chunk.Deselect();
 	}
 	
 	//Generates/Regenerates the region
 	public void Generate()
 	{
-		foreach(Chunk chunk in chunks) chunk.generate();
+		foreach(MeshChunk chunk in chunks) chunk.Generate();
 	}
 
 	//Generates a single random path in the region
@@ -142,43 +142,17 @@ public class Region {
 		return path;
 	}
 	
-	//Detects if there is a path coming into the region
-	/*Deprecated
-	private bool ExistsIncomingPath()
-	{
-		List<Cell> cells = this.GetCells();
-		List<Cell.CellType> path_types = new List<Cell.CellType>();
-		path_types.Add(Cell.CellType.Path_Start);
-		path_types.Add(Cell.CellType.Path_End);
-		
-		foreach(Cell cell_inner in this.GetBorderCells()) 
-		{	
-			foreach(Cell cell_adjacent in cell_inner.getNeighbors())
-			{
-				if(!cells.Contains(cell_adjacent))
-				{
-					if(path_types.Contains(cell_adjacent.cellType))
-					{
-						Debug.Log("An adjacent path exists @ " + cell_inner.name);	
-					}
-				}
-			}
-		}
-		return false;
-	}
-	*/	
-	
 	public void ApplyPath(Path _path)
 	{
-		foreach(Chunk chunk in chunks) chunk.ApplyPath(_path);
-		foreach(Chunk chunk in chunks) chunk.Redraw();
+		foreach(MeshChunk chunk in chunks) chunk.ApplyPath(_path);
+		foreach(MeshChunk chunk in chunks) chunk.GeneratePathModels();
 	}
 		
-	//Get chunks bordering this region (inside)
-	public List<Chunk> GetBorderChunks()
+	//Get MeshChunks bordering this region (inside)
+	public List<MeshChunk> GetBorderChunks()
 	{
-		List<Chunk> chunks_out = new List<Chunk>();
-		foreach(Chunk chunk in chunks)
+		List<MeshChunk> chunks_out = new List<MeshChunk>();
+		foreach(MeshChunk chunk in chunks)
 		{
 			if(!chunks.Contains(chunk.top) || !chunks.Contains(chunk.bottom)
 			|| !chunks.Contains(chunk.left) || !chunks.Contains(chunk.right))
@@ -191,7 +165,7 @@ public class Region {
 	{
 		List<Cell> cells = this.GetCells();
 		List<Cell> cells_out = new List<Cell>();
-		foreach(Chunk chunk in this.GetBorderChunks())
+		foreach(MeshChunk chunk in this.GetBorderChunks())
 		{
 			foreach(Cell cell in chunk.getCells())
 			{
@@ -202,11 +176,11 @@ public class Region {
 		}
 		return cells_out;
 	}
-	//Gets all cells from chunks
+	//Gets all cells from MeshChunks
 	public List<Cell> GetCells()
 	{
 		List<Cell> cells_out = new List<Cell>();
-		foreach(Chunk chunk in chunks)
+		foreach(MeshChunk chunk in chunks)
 		{
 			foreach(Cell cell in chunk.getCells()) cells_out.Add(cell);
 		}
@@ -215,13 +189,13 @@ public class Region {
 	
 	public bool ContainsCell(Cell _cell)
 	{
-		foreach(Chunk chunk in chunks)
+		foreach(MeshChunk chunk in chunks)
 		{
 			if(chunk.hasCell(_cell)) return true;
 		}
 		return false;
 	}
-	public bool ContainsChunk(Chunk _chunk)
+	public bool ContainsChunk(MeshChunk _chunk)
 	{
 		return chunks.Contains(_chunk);	
 	}
@@ -235,11 +209,11 @@ public class Region {
 		return false;
 	}
 	
-	public Chunk GetClosestChunk(Vector3 _position)
+	public MeshChunk GetClosestChunk(Vector3 _position)
 	{
-		Chunk chunk_out = null;
+		MeshChunk chunk_out = null;
 		float closest_distance = 65536.0f;
-		foreach(Chunk chunk in chunks)
+		foreach(MeshChunk chunk in chunks)
 		{
 			float distance = (chunk.transform.position - _position).magnitude;
 			if(closest_distance > distance)

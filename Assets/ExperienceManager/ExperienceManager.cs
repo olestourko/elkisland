@@ -24,6 +24,8 @@ public class ExperienceManager : MonoBehaviour {
 	private float count = 0.0f;
 	public GameObject sky;
 	
+	public bool development_mode;
+	
 	// Use this for initialization
 	void Start () 
 	{
@@ -63,7 +65,8 @@ public class ExperienceManager : MonoBehaviour {
 		lighting_2.sky_factor = 0.2f;
 		
 		lighting_current = lighting_0;
-		TweenLightingState(lighting_3);
+		if(development_mode) TweenLightingState(lighting_3);
+		else TweenLightingState(lighting_1);
 	}
 	
 	// Update is called once per frame

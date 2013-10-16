@@ -8,7 +8,7 @@ public class gui : MonoBehaviour {
 	private string pre = "> ";
 	public string terminalString = "";
 	
-	public int chunk_count;
+	public int MeshChunk_count;
 	public int cell_count;
 	public int path_count;
 	public string version_number;
@@ -46,7 +46,7 @@ public class gui : MonoBehaviour {
 		GUI.skin.box.normal.background = texture;	
 		GUI.Box(new Rect (0, Screen.height - 50, 100, 50), GUIContent.none);
 		GUI.Box(new Rect (100, Screen.height - 30, 100, 30), GUIContent.none);
-		GUI.Label(new Rect (10, Screen.height - 25, 100, 20), "chunks: " + chunk_count, text);
+		GUI.Label(new Rect (10, Screen.height - 25, 100, 20), "MeshChunks: " + MeshChunk_count, text);
 		GUI.Label(new Rect (10, Screen.height - 45, 100, 20), "cells: " + cell_count, text);
 		GUI.Label(new Rect (110, Screen.height - 25, 100, 20), "paths: " + path_count, text);
 		
@@ -95,7 +95,7 @@ public class gui : MonoBehaviour {
 			if(args.Count != 2)
 			{
 				Debug.Log ("Usage: select <x> <z>");
-				Debug.Log ("Selects a region with the chunk <x> <z> at the center.");
+				Debug.Log ("Selects a region with the MeshChunk <x> <z> at the center.");
 			}
 			else
 			{

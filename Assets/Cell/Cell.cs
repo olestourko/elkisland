@@ -32,6 +32,11 @@ public class Cell {
 	//for threading
 	public Vector3 position;
 	
+	//Move later (models)
+	public GameObject model_instance;
+	public GameObject model_random;
+	
+	
 	public Cell(Cell_GameObject _cell_GameObject)
 	{
 		cell_GameObject = _cell_GameObject;
@@ -63,12 +68,15 @@ public class Cell {
 	{
 		if(selected) return;
 		selected = true;
-		cell_GameObject.Redraw();
+		//if(cell_GameObject != null) cell_GameObject.Redraw();
 	}
 	
 	public void Deselect()
 	{
 		selected = false;
-		cell_GameObject.Redraw();
+		//if(cell_GameObject != null) cell_GameObject.Redraw();
 	}
+	
+	public int CostMinusOne() { return cost - 1; }
+	
 }

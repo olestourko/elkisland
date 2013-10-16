@@ -10,8 +10,8 @@ public class MeshChunk : MonoBehaviour {
 	private List<WeightedQuad> quads = new List<WeightedQuad>();
 	
 	Cell[,] cells = new Cell[5,5];
-	private List<Cell> cells_list = new List<Cell>();
-	private Dictionary<Cell, WeightedQuad> cell_to_quad = new Dictionary<Cell, WeightedQuad>();
+	private List<Cell> cells_list;
+	private Dictionary<Cell, WeightedQuad> cell_to_quad;
 	
 	//Adjacent chunks
 	public MeshChunk left;
@@ -21,23 +21,32 @@ public class MeshChunk : MonoBehaviour {
 	
 	/*Event firing when chunk is init'd*/
 	public event InitHandler Init;
-	public delegate void InitHandler(Chunk _chunk);
+	public delegate void InitHandler(MeshChunk _chunk);
 	
+	
+	/*Used by cells for instantiating paths and random models*/
+	public GameObject model_turn;
+	public List<GameObject> model_straight;
+	public List<GameObject> models_random;
+	public Material random_model_material;
 	
 	// Use this for initialization
 	void Start () 
 	{
-		Generate ();
+		Generate();
+		Init(this);
 	}
 	
 	//--------------------------------------------------------------------------
 	// Everything for generation
 	//--------------------------------------------------------------------------
 	
+	//Generates mesh
 	public void Generate()
 	{
 		GenerateCells();
-		List<float> offsets = new List<float>();
+		quads = new List<WeightedQuad>();
+		cell_to_quad = new Dictionary<Cell, WeightedQuad>();
 		//generate quads (each quad == 1 cell)
 		for(int i = 0; i < 5; i++)
 		{
@@ -53,128 +62,128 @@ public class MeshChunk : MonoBehaviour {
 				
 				//Associate a cell and get the y offsets for quad verts based on cel heights
 				Cell cell = cells[i, j];
-				quad.vertex_1_weight = quad.vertex_2_weight = quad.vertex_3_weight = quad.vertex_4_weight = cell.cost;
+				quad.vertex_1_weight = quad.vertex_2_weight = quad.vertex_3_weight = quad.vertex_4_weight = cell.CostMinusOne();
 				cell_to_quad.Add(cell, quad);
-	
-				
-
-				float top, bottom, left, right = cell.cost;
-				float topleft, topright, bottomleft, bottomright = cell.cost;
-				
-				//vert 0
-				if(cell.bottom != null && cell.left != null)
-				{
-					if(cell.bottom.left != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.bottom.cost + cell.left.cost + cell.bottom.left.cost) / 4.0f);
-					}
-					else if(cell.left.bottom != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.bottom.cost + cell.left.cost + cell.left.bottom.cost) / 4.0f);						
-					}
-					else
-					{
-						offsets.Add((cell.cost + cell.bottom.cost + cell.left.cost) / 3.0f);	
-					}
-				} 
-				else if(cell.bottom != null)
-				{
-					offsets.Add((cell.cost + cell.bottom.cost) / 2.0f);	
-				}
-				else if(cell.left != null)
-				{
-					offsets.Add((cell.cost + cell.left.cost) / 2.0f);	
-				} 
-				else offsets.Add(cell.cost);
-				
-				//vert 1
-				if(cell.bottom != null && cell.right != null)
-				{
-					if(cell.bottom.right != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.bottom.cost + cell.right.cost + cell.bottom.right.cost) / 4.0f);
-					}
-					else if(cell.right.bottom != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.bottom.cost + cell.right.cost + cell.right.bottom.cost) / 4.0f);						
-					}
-					else
-					{
-						offsets.Add((cell.cost + cell.bottom.cost + cell.right.cost) / 3.0f);
-					}
-				} 
-				else if(cell.bottom != null)
-				{
-					offsets.Add((cell.cost + cell.bottom.cost) / 2.0f);	
-				}
-				else if(cell.right != null)
-				{
-					offsets.Add((cell.cost + cell.right.cost) / 2.0f);	
-				} 
-				else offsets.Add(cell.cost);
-				
-				//vert 2
-				if(cell.top != null && cell.left != null)
-				{
-					if(cell.top.left != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.top.cost + cell.left.cost + cell.top.left.cost) / 4.0f);
-					}
-					else if(cell.left.top != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.top.cost + cell.left.cost + cell.left.top.cost) / 4.0f);						
-					}
-					else
-					{
-						offsets.Add((cell.cost + cell.top.cost + cell.left.cost) / 3.0f);
-					}
-				} 
-				else if(cell.top != null)
-				{
-					offsets.Add((cell.cost + cell.top.cost) / 2.0f);	
-				}
-				else if(cell.left != null)
-				{
-					offsets.Add((cell.cost + cell.left.cost) / 2.0f);	
-				} 
-				else offsets.Add(cell.cost);
-				
-				//vert 3
-				if(cell.top != null && cell.right != null)
-				{
-					if(cell.top.right != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.top.cost + cell.right.cost + cell.top.right.cost) / 4.0f);
-					}
-					else if(cell.left.top != null)
-					{
-						offsets.Add(
-							(cell.cost + cell.top.cost + cell.right.cost + cell.right.top.cost) / 4.0f);						
-					}
-					else
-					{
-						offsets.Add((cell.cost + cell.top.cost + cell.right.cost) / 3.0f);
-					}
-				} 
-				else if(cell.top != null)
-				{
-					offsets.Add((cell.cost + cell.top.cost) / 2.0f);	
-				}
-				else if(cell.right != null)
-				{
-					offsets.Add((cell.cost + cell.right.cost) / 2.0f);	
-				} 
-				else offsets.Add(cell.cost);
 			}
 		}
-		
+		UpdateMesh();		
+	}
+	public void SmoothMesh()
+	{
+		List<float> offsets = new List<float>();
+		foreach(Cell cell in cells_list)
+		{
+			//vert 0
+			if(cell.bottom != null && cell.left != null)
+			{
+				if(cell.bottom.left != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne() + cell.bottom.left.CostMinusOne()) / 4.0f);				}
+				else if(cell.left.bottom != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne() + cell.left.bottom.CostMinusOne()) / 4.0f);						
+				}
+				else
+				{
+					offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne()) / 3.0f);	
+				}
+			} 
+			else if(cell.bottom != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne()) / 2.0f);	
+			}
+			else if(cell.left != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.left.CostMinusOne()) / 2.0f);	
+			} 
+			else offsets.Add(cell.CostMinusOne());
+					
+			//vert 1
+			if(cell.bottom != null && cell.right != null)
+			{
+				if(cell.bottom.right != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne() + cell.bottom.right.CostMinusOne()) / 4.0f);
+				}
+				else if(cell.right.bottom != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne() + cell.right.bottom.CostMinusOne()) / 4.0f);						
+				}
+				else
+				{
+					offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne()) / 3.0f);
+				}
+			} 
+			else if(cell.bottom != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne()) / 2.0f);	
+			}
+			else if(cell.right != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.right.CostMinusOne()) / 2.0f);	
+			} 
+			else offsets.Add(cell.CostMinusOne());
+					
+			//vert 2
+			if(cell.top != null && cell.left != null)
+			{
+				if(cell.top.left != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.top.left.CostMinusOne()) / 4.0f);
+				}
+				else if(cell.left.top != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.left.top.CostMinusOne()) / 4.0f);						
+				}
+				else
+				{
+					offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne()) / 3.0f);
+				}
+			} 
+			else if(cell.top != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne()) / 2.0f);	
+			}
+			else if(cell.left != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.left.CostMinusOne()) / 2.0f);	
+			} 
+			else offsets.Add(cell.CostMinusOne());
+					
+			//vert 3
+			if(cell.top != null && cell.right != null)
+			{
+				if(cell.top.right != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.right.CostMinusOne() + cell.top.right.CostMinusOne()) / 4.0f);
+				}
+				else if(cell.left.top != null)
+				{
+					offsets.Add(
+						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.left.top.CostMinusOne()) / 4.0f);						
+				}
+				else
+				{
+					offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne() + cell.right.CostMinusOne()) / 3.0f);
+				}
+			} 
+			else if(cell.top != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne()) / 2.0f);	
+			}
+			else if(cell.right != null)
+			{
+				offsets.Add((cell.CostMinusOne() + cell.right.CostMinusOne()) / 2.0f);	
+			} 
+			else offsets.Add(cell.CostMinusOne());
+		}
 		int quad_number = 0;
 		foreach(WeightedQuad quad in quads)
 		{
@@ -184,25 +193,32 @@ public class MeshChunk : MonoBehaviour {
 			quad.vertex_4_weight = offsets[quad_number + 3];		
 			quad_number += 4;
 		}
-
-		
 		//Apply vert weights to each quad
 		foreach(WeightedQuad quad in quads)
 		{
-			quad.vertex_1.y = quad.vertex_1_weight * -0.5f;
-			quad.vertex_2.y = quad.vertex_2_weight * -0.5f;
-			quad.vertex_3.y = quad.vertex_3_weight * -0.5f;
-			quad.vertex_4.y = quad.vertex_4_weight * -0.5f;
+			quad.vertex_1.y = (quad.vertex_1_weight * -0.01f);
+			quad.vertex_2.y = (quad.vertex_2_weight * -0.01f);
+			quad.vertex_3.y = (quad.vertex_3_weight * -0.01f);
+			quad.vertex_4.y = (quad.vertex_4_weight * -0.01f);
 		}
-		UpdateMesh();		
 	}
-	
-	private void UpdateMesh()
-	{
+	public void UpdateMesh()
+	{	
+		//Generate basic, world-space uv map
+		Vector3[] verts = GetVerts();
+		Vector2[] uv = new Vector2[verts.Length]; 
+		int i = 0;
+		while(i < uv.Length)
+		{
+			uv[i] = new Vector2(verts[i].x, verts[i].z);
+			i++;
+		}	
+		
 		Mesh mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
-		mesh.vertices = GetVerts();
+		mesh.vertices = verts;
 		mesh.triangles = GetTris();
+		mesh.uv = uv;
 		mesh.RecalculateNormals();	
 	}
 	
@@ -218,8 +234,7 @@ public class MeshChunk : MonoBehaviour {
 		}
 		Vector3[] verts_array = verts_list.ToArray();
 		return verts_array;
-	}
-	
+	}	
 	private int[] GetTris()
 	{
 		List<Triangle> tris = new List<Triangle>();
@@ -255,6 +270,7 @@ public class MeshChunk : MonoBehaviour {
 	
 	private void GenerateCells()
 	{
+		cells_list = new List<Cell>();
 		/*Create the cells*/
 		for(int i = 0; i < 5; i++)
 		{
@@ -265,7 +281,7 @@ public class MeshChunk : MonoBehaviour {
 				{
 					cell = new Cell(null);
 					cells[i, j] = cell;
-					cell.position = this.transform.position;
+					cell.position = this.transform.position + new Vector3(i, 0, j);
 					cells_list.Add(cell);
 				}
 				cell.cost = Random.Range(1, 4);
@@ -290,7 +306,6 @@ public class MeshChunk : MonoBehaviour {
 	
 	public void ApplyPath(Path _path)
 	{
-		//Debug.Log ("Chunk " + name + " applied path");
 		bool onPath = false;
 		foreach(Cell cell in _path.getCells())
 		{
@@ -307,19 +322,18 @@ public class MeshChunk : MonoBehaviour {
 				{
 					cell.setType(Cell.CellType.Path_End);
 					onPath = false;
-					//Debug.Log ("A path runs through chunk " + name);	
 				}
 				else
 				{
 					cell.setType(Cell.CellType.Path);
 				}
-			}		
+			}	
 		}
 	}
 	
 	public void Redraw()
 	{
-		foreach(Cell cell in cells_list) cell.cell_GameObject.Redraw();	
+		//foreach(Cell cell in cells_list) cell.cell_GameObject.Redraw();	
 	}
 	
 	//--------------------------------------------------------------------------
@@ -399,7 +413,7 @@ public class MeshChunk : MonoBehaviour {
 		float closest_distance = 65536.0f;
 		foreach(Cell cell in cells_list)
 		{
-			float distance = Vector3.Distance(cell.cell_GameObject.transform.position, _position);
+			float distance = Vector3.Distance(cell.position, _position);
 			if(distance < closest_distance)
 			{
 				closest_cell = cell;
@@ -407,6 +421,126 @@ public class MeshChunk : MonoBehaviour {
 			}
 		}
 		return closest_cell;
+	}
+	
+	
+	
+	
+	
+	
+	
+	//--------------------------------------------------------------------------
+	// For instantiating cell related models (move later?)
+	//--------------------------------------------------------------------------
+	public void GenerateRandomModels()
+	{
+		foreach(Cell cell in cells_list)
+		{
+			Destroy(cell.model_random);
+			if(cell.cellType != Cell.CellType.Woods) return;
+			GameObject model_d = models_random[Random.Range(0, models_random.Count)];
+			cell.model_random = Instantiate(model_d) as GameObject;
+			float random_offset_x = Random.Range(-0.5f, 0.5f);
+			float random_offset_z = Random.Range(-0.5f, 0.5f);
+			float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
+			float y = cell_to_quad[cell].GetAverageWeight() * 0.01f;
+			cell.model_random.transform.position = cell.position + new Vector3(random_offset_x, y, random_offset_z);
+			cell.model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
+			cell.model_random.transform.parent = this.transform;
+			cell.model_random.renderer.material = random_model_material;			
+		}
+	}
+	public void GeneratePathModels()
+	{
+		foreach(Cell cell in cells_list)
+		{
+			Destroy(cell.model_instance);
+			List<Cell.CellType> valid_cell_types = new List<Cell.CellType>();
+			valid_cell_types.Add(Cell.CellType.Path);
+			valid_cell_types.Add(Cell.CellType.Path_Start);
+			valid_cell_types.Add(Cell.CellType.Path_End);	
+			if(!valid_cell_types.Contains(cell.cellType)) continue;
+			
+			int num_adjacent_paths = 0;
+			if(cell.left != null) { if(valid_cell_types.Contains(cell.left.cellType)) num_adjacent_paths++; }
+			if(cell.right != null) { if(valid_cell_types.Contains(cell.right.cellType)) num_adjacent_paths++; }
+			if(cell.top != null) { if(valid_cell_types.Contains(cell.top.cellType)) num_adjacent_paths++; }
+			if(cell.bottom != null) { if(valid_cell_types.Contains(cell.bottom.cellType)) num_adjacent_paths++; }
+			if(num_adjacent_paths > 2) continue;
+			
+			GameObject model_instance = null;
+			//Straights
+			if(cell.left != null && cell.right != null)
+			{
+				if(valid_cell_types.Contains(cell.left.cellType) && valid_cell_types.Contains(cell.right.cellType))
+				{
+					GameObject model = model_straight[Random.Range(0, model_straight.Count)];
+					model_instance = InstantiateModel(model, cell);
+					continue;
+				}
+			}
+			
+			if(cell.top != null && cell.bottom != null)
+			{
+				if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.bottom.cellType))
+				{
+					GameObject model = model_straight[Random.Range(0, model_straight.Count)];
+					model_instance = InstantiateModel(model, cell);
+					model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI / 2.0f) * 57.3f));
+					//model_instance.transform.RotateAround(Vector3.up, Mathf.PI / 2.0f);
+					continue;
+				}
+			}
+			//Turns
+			if(cell.top != null && cell.left != null)
+			{
+				if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.left.cellType))
+				{
+					model_instance = InstantiateModel(model_turn, cell);
+					continue;
+				}
+			}
+			if(cell.bottom != null && cell.right != null)
+			{
+				if(valid_cell_types.Contains(cell.bottom.cellType) && valid_cell_types.Contains(cell.right.cellType))
+				{
+					model_instance = InstantiateModel(model_turn, cell);
+					model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI) * 57.3f));
+					//model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+					continue;
+				}
+			}
+			
+			if(cell.top != null && cell.right != null)
+			{
+				if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.right.cellType))
+				{
+					model_instance = InstantiateModel(model_turn, cell);
+					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+					continue;
+				}
+			}
+			if(cell.bottom != null && cell.left != null)
+			{
+				if(valid_cell_types.Contains(cell.bottom.cellType) && valid_cell_types.Contains(cell.left.cellType))
+				{
+					model_instance = InstantiateModel(model_turn, cell);
+					model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI) * 57.3f));
+					//model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
+					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+					continue;
+				}
+			}
+			cell.model_instance = model_instance;
+		}
+	}
+	private GameObject InstantiateModel(GameObject _model, Cell _cell)
+	{
+		Destroy(_cell.model_random);
+		GameObject model_instance = Instantiate(_model) as GameObject;
+		model_instance.transform.position = _cell.position;
+		model_instance.transform.parent = this.transform;
+		return model_instance;
 	}
 	
 }

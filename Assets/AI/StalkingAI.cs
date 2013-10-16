@@ -105,7 +105,7 @@ public class StalkingAI : MonoBehaviour {
 					cell_target = cell_adjacent;
 				}
 			}
-			if(cell_target != null) seek_target = cell_target.cell_GameObject.transform.position;
+			if(cell_target != null) seek_target = cell_target.position;
 			else rigidbody.velocity = Vector3.zero;	
 		}
 		
