@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class ExperienceManager : MonoBehaviour {
 	
+	public gui gui;
 	public WorldGrid worldGrid;
 	public TrapManager trapManager;
 	
@@ -15,15 +16,24 @@ public class ExperienceManager : MonoBehaviour {
 	
 	//Lighting
 	private LightingState lighting_current;
+	private LightingState lighting_blended;
 	private LightingState lighting_to;
 	
 	private LightingState lighting_0;
 	private LightingState lighting_1;
 	private LightingState lighting_2;
 	private LightingState lighting_3;
+	private LightingState lighting_4;
 	private float count = 0.0f;
+	private bool done_tweening = true;
+	private MeshChunk.ChunkType last_tweened_to;
 	public GameObject sky;
 	
+	private GameObject forest_sounds;
+	private GameObject plain_sounds;
+	
+	//for AI spawning on interval (to be moved)
+	private float count_2 = 0.0f;
 	public bool development_mode;
 	
 	// Use this for initialization
@@ -57,16 +67,25 @@ public class ExperienceManager : MonoBehaviour {
 			new Color(1.0f, 1.0f, 1.0f),
 			new Color(1.0f, 1.0f, 1.0f),
 			new Color(1.0f, 1.0f, 1.0f),
-			//new Color(0.156f, 0.117f, 0.176f),
 			0.0f
 		);
-		
+		//yellow / dusk
+		lighting_4 = new LightingState(
+			new Color(0.549f, 0.196f, 0.294f),
+			new Color(0.549f, 0.196f, 0.0f),
+			new Color(0.549f, 0.196f, 0.0f),
+			0.15f
+		);
 		
 		lighting_2.sky_factor = 0.2f;
 		
 		lighting_current = lighting_0;
 		if(development_mode) TweenLightingState(lighting_3);
 		else TweenLightingState(lighting_1);
+		
+		//Get audio sources
+		forest_sounds = transform.Find("ForestSounds").gameObject;
+		plain_sounds = transform.Find("PlainSounds").gameObject;
 	}
 	
 	// Update is called once per frame
@@ -75,11 +94,16 @@ public class ExperienceManager : MonoBehaviour {
 		//Blend lighting
 		if(count <= 1.0f)
 		{
-			lighting_current = lighting_current.Blend(lighting_to, count);
-			ApplyLightingState(lighting_current);
+			lighting_blended = lighting_current.Blend(lighting_to, count);
+			ApplyLightingState(lighting_blended);
 			count += Time.deltaTime * 0.25f;
+		} 
+		else 
+		{
+			lighting_current = lighting_blended;
+			done_tweening = true;
 		}
-		
+			
 		//Generate traps
 		if(worldGrid.ready)
 		{
@@ -147,10 +171,75 @@ public class ExperienceManager : MonoBehaviour {
 		//Keep sky moving with player
 		Vector3 sky_offset = Vector3.forward * 10.0f;
 		sky.transform.position = player.transform.position + sky_offset;
+		
+		
+		
+		//Create spawn points and targets for shadow ghosts
+		List<Vector3> positions = new List<Vector3>();
+		foreach(MeshChunk chunk in worldGrid.visible_region.GetChunks())
+		{
+			foreach(Vector3 position in chunk.GetRandomObjectPositions())
+			{
+				float distance = Vector3.Distance(player.transform.position, position);
+				if(distance > 6.0f && distance < 8.0f) 
+				{
+					positions.Add(position);
+					Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.green);
+					Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.green);
+					//Debug.DrawLine(player.transform.position, position, Color.green);	
+				}
+			}
+		}
+		//Spawn shadow ghost every 1 second using random position
+		count_2 += Time.deltaTime;
+		if(count_2 > 0.1f) 
+		{
+			count_2 = 0.0f;
+			BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
+			ai.transform.position = positions[Random.Range(0, positions.Count-1)] + (Vector3.up * 0.11f);
+			ai.target = positions[Random.Range(0, positions.Count-1)];
+		}	
+		
+		//Set lighting based on distance to path
+		gui.distance_to_path = worldGrid.closest_distance;
+		if(count >= 1.0f)
+		{
+			float factor = worldGrid.closest_distance / 4.0f;
+			LightingState lighting_blended = lighting_1.Blend(lighting_2, factor);
+			//ApplyLightingState(lighting_blended);
+		}
+		//Set lighting based on the type of chunk the player is on
+		//Debug.Log (done_tweening + " | " + last_tweened_to);
+		switch(worldGrid.GetChunkAt(player.transform.position).chunkType)
+		{
+		case MeshChunk.ChunkType.Forest:
+			if(!done_tweening) break;
+			if(last_tweened_to != MeshChunk.ChunkType.Forest)
+			{
+				last_tweened_to = MeshChunk.ChunkType.Forest;
+				TweenLightingState(lighting_1);
+				plain_sounds.audio.volume = 0.0f;
+				forest_sounds.audio.volume = 1.0f;
+			}
+			break;
+		case MeshChunk.ChunkType.Plain:
+			if(!done_tweening) break;
+			if(last_tweened_to != MeshChunk.ChunkType.Plain)
+			{
+				last_tweened_to = MeshChunk.ChunkType.Plain;
+				TweenLightingState(lighting_4);
+				plain_sounds.audio.volume = 1.0f;
+				forest_sounds.audio.volume = 0.0f;
+			}
+			break;
+		}
+		
+		//audio
+		forest_sounds.transform.position = player.transform.position;
+		plain_sounds.transform.position = player.transform.position;
 	}
 	
 	//Lighting
-	
 	public void ChangeLighting(int _id)
 	{
 		switch(_id)
@@ -169,6 +258,7 @@ public class ExperienceManager : MonoBehaviour {
 	
 	private void TweenLightingState(LightingState _lightingState)
 	{
+		done_tweening = false;
 		count = 0.0f;	
 		lighting_to = _lightingState;
 	}

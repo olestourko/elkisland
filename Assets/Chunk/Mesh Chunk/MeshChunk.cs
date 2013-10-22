@@ -30,6 +30,14 @@ public class MeshChunk : MonoBehaviour {
 	public List<GameObject> models_random;
 	public Material random_model_material;
 	
+	public ChunkType chunkType;
+	public enum ChunkType
+	{
+		Forest,
+		Plain
+	}
+	
+	
 	// Use this for initialization
 	void Start () 
 	{
@@ -194,12 +202,14 @@ public class MeshChunk : MonoBehaviour {
 			quad_number += 4;
 		}
 		//Apply vert weights to each quad
+		float factor = -0.01f;
+		//if(chunkType == ChunkType.Plain) factor = -0.5f;
 		foreach(WeightedQuad quad in quads)
 		{
-			quad.vertex_1.y = (quad.vertex_1_weight * -0.01f);
-			quad.vertex_2.y = (quad.vertex_2_weight * -0.01f);
-			quad.vertex_3.y = (quad.vertex_3_weight * -0.01f);
-			quad.vertex_4.y = (quad.vertex_4_weight * -0.01f);
+			quad.vertex_1.y = (quad.vertex_1_weight * factor);
+			quad.vertex_2.y = (quad.vertex_2_weight * factor);
+			quad.vertex_3.y = (quad.vertex_3_weight * factor);
+			quad.vertex_4.y = (quad.vertex_4_weight * factor);
 		}
 	}
 	public void UpdateMesh()
@@ -279,7 +289,7 @@ public class MeshChunk : MonoBehaviour {
 				Cell cell = cells[i, j];
 				if(cell == null)
 				{
-					cell = new Cell(null);
+					cell = new Cell();
 					cells[i, j] = cell;
 					cell.position = this.transform.position + new Vector3(i, 0, j);
 					cells_list.Add(cell);
@@ -541,6 +551,15 @@ public class MeshChunk : MonoBehaviour {
 		model_instance.transform.position = _cell.position;
 		model_instance.transform.parent = this.transform;
 		return model_instance;
+	}
+	public List<Vector3> GetRandomObjectPositions()
+	{
+		List<Vector3> objects_out = new List<Vector3>();
+		foreach(Cell cell in cells_list)
+		{
+			if(cell.model_random != null) objects_out.Add(cell.model_random.transform.position);
+		}
+		return objects_out;
 	}
 	
 }

@@ -131,10 +131,5 @@ public class Path {
 		cells = new_cells;
 		return true;
 	}
-	
-	public string ToString()
-	{
-		return "Path | start: " + this.getStart().cell_GameObject.name + ", end: " + this.getEnd().cell_GameObject.name;	
-	}
 
 }

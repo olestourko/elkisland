@@ -8,9 +8,10 @@ public class gui : MonoBehaviour {
 	private string pre = "> ";
 	public string terminalString = "";
 	
-	public int MeshChunk_count;
+	public int chunk;
 	public int cell_count;
 	public int path_count;
+	public float distance_to_path;
 	public string version_number;
 	
 	private WorldGrid worldGrid;
@@ -43,16 +44,19 @@ public class gui : MonoBehaviour {
 		text.fontSize = 16;
 		text.normal.textColor = Color.white;
 		
-		GUI.skin.box.normal.background = texture;	
-		GUI.Box(new Rect (0, Screen.height - 50, 100, 50), GUIContent.none);
-		GUI.Box(new Rect (100, Screen.height - 30, 100, 30), GUIContent.none);
-		GUI.Label(new Rect (10, Screen.height - 25, 100, 20), "MeshChunks: " + MeshChunk_count, text);
-		GUI.Label(new Rect (10, Screen.height - 45, 100, 20), "cells: " + cell_count, text);
-		GUI.Label(new Rect (110, Screen.height - 25, 100, 20), "paths: " + path_count, text);
+		GUI.skin.box.normal.background = texture;
+		GUI.Box(new Rect (0, Screen.height - 75, 170, 25), GUIContent.none);
+		GUI.Box(new Rect (0, Screen.height - 50, 100, 25), GUIContent.none);
+		GUI.Box(new Rect (0, Screen.height - 25, 200, 25), GUIContent.none);
+		
+		GUI.Label(new Rect (10, Screen.height - 75 + 4, 100, 20), "d to path: " + distance_to_path, text);
+		GUI.Label(new Rect (10, Screen.height - 50 + 4, 100, 20), "cells: " + cell_count, text);
+		GUI.Label(new Rect (10, Screen.height - 25 + 4, 100, 20), "chunks: " + chunk, text);
+		GUI.Label(new Rect (110, Screen.height - 25 + 4, 100, 20), "paths: " + path_count, text);
 		
 		//Version number
 		GUI.Box(new Rect (Screen.width - 150, Screen.height - 30, 150, 30), GUIContent.none);
-		GUI.Label(new Rect(Screen.width - 140, Screen.height - 25, 150, 30), version_number, text);
+		GUI.Label(new Rect(Screen.width - 140, Screen.height - 25 + 4, 150, 30), version_number, text);
 	}
 	
 	private void processInput()

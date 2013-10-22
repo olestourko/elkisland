@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 public class Cell {
 
-	public Cell_GameObject cell_GameObject;
-	
 	public bool selected = false;
 	public CellType cellType;
 	public enum CellType
@@ -37,10 +35,7 @@ public class Cell {
 	public GameObject model_random;
 	
 	
-	public Cell(Cell_GameObject _cell_GameObject)
-	{
-		cell_GameObject = _cell_GameObject;
-	}
+	public Cell() {}
 	
 	public List<Cell> getNeighbors()
 	{
@@ -68,13 +63,11 @@ public class Cell {
 	{
 		if(selected) return;
 		selected = true;
-		//if(cell_GameObject != null) cell_GameObject.Redraw();
 	}
 	
 	public void Deselect()
 	{
 		selected = false;
-		//if(cell_GameObject != null) cell_GameObject.Redraw();
 	}
 	
 	public int CostMinusOne() { return cost - 1; }

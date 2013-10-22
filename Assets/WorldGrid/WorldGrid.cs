@@ -8,15 +8,20 @@ public class WorldGrid : MonoBehaviour {
 	public int size;
 
 	public float drawDistance = 30.0f;
-	public MeshChunk chunkPrefab;
+	public MeshChunk chunk_prefab_forest;
+	public MeshChunk chunk_prefab_plain;
+	public int forests_generated = 0;
+	public int plains_generated = 0;
+	
 	public MeshChunk[,] chunks = new MeshChunk[100, 100];
 	//These are used to speed up generation and loading
 	public List<MeshChunk> chunks_list = new List<MeshChunk>();
-	//public List<Cell> MeshChunkCells = new List<Cell>();
 	public List<MeshChunk> pending_chunks = new List<MeshChunk>();
 	private List<MeshChunk> completed_chunks = new List<MeshChunk>();
 	public GameObject prescence;
-
+	
+	public float closest_distance;
+	
 	//GUI
 	gui gui;
 	
@@ -26,7 +31,7 @@ public class WorldGrid : MonoBehaviour {
 	private Region selected_region;
 	
 	//Regeneration of visited areas
-	private Region visible_region = new Region();
+	public Region visible_region = new Region();
 	bool visible_region_changed = false;
 	private float generation_timer = 0.0f;
 	
@@ -39,7 +44,6 @@ public class WorldGrid : MonoBehaviour {
 	//Threading (experimental)
 	Thread thread = null;
 	private List<Path> paths_threading_out;
-	
 	
 	public bool ready = false;
 	
@@ -72,6 +76,17 @@ public class WorldGrid : MonoBehaviour {
 				thread = null;
 				//regen
 				//RegenerateRegion_Threaded();
+			}
+		}
+		
+		//Find distance to closest path cell
+		closest_distance = 65536.0f;
+		foreach(Path path in paths)
+		{
+			foreach(Cell cell in path.getCells())
+			{
+				float distance = Vector3.Distance(cell.position, prescence.transform.position);
+				if(distance < closest_distance) closest_distance = distance;
 			}
 		}
 	}
@@ -131,6 +146,7 @@ public class WorldGrid : MonoBehaviour {
 			}
 			else
 			{
+				if(!visible_region.ContainsChunk(chunk)) visible_region.AddChunk(chunk);
 				chunk.makeActive();
 				chunk.enabled = true;
 			}
@@ -139,6 +155,7 @@ public class WorldGrid : MonoBehaviour {
 		while(chunks_to_deactivate.Count > 0 && paths.Count > 0)
 		{
 			MeshChunk chunk = chunks_to_deactivate[0];
+			visible_region.RemoveChunk(chunk);
 			chunks_to_deactivate.Remove(chunk);
 			chunk.makeInactive();
 		}
@@ -183,18 +200,28 @@ public class WorldGrid : MonoBehaviour {
 		}
 	}
 	
-	public Cell GetCellAt(Vector3 _position)
+	public MeshChunk GetChunkAt(Vector3 _position)
 	{
 		int i = (int)Mathf.Floor((_position.x + 0.5f) / 5) + 50;
 		int j = (int)Mathf.Floor((_position.z + 0.5f) / 5) + 50;
-		MeshChunk MeshChunk = chunks[i, j];
-		Cell cell = MeshChunk.GetCellClosestTo(_position);
+		return chunks[i, j];
+	}
+	
+	public Cell GetCellAt(Vector3 _position)
+	{
+		MeshChunk chunk = GetChunkAt(_position);
+		Cell cell = chunk.GetCellClosestTo(_position);
 		return cell;
 	}
 	
 	public MeshChunk CreateChunk(int _i, int _j)
 	{
-		MeshChunk chunk = Instantiate(chunkPrefab) as MeshChunk;
+		forests_generated++;
+		
+		MeshChunk chunk_to_instantiate = chunk_prefab_plain;
+		if(forests_generated > 8) chunk_to_instantiate = chunk_prefab_forest;
+		
+		MeshChunk chunk = Instantiate(chunk_to_instantiate) as MeshChunk;
 		chunk.transform.parent = this.transform;
 		chunk.transform.position = this.transform.position;
 		chunk.name = "c " + _i + ", " + _j;
@@ -404,8 +431,8 @@ public class WorldGrid : MonoBehaviour {
 			selected_region = region;
 		}
 		//Update GUI
-		gui.MeshChunk_count = chunks_list.Count;
-		gui.cell_count = chunks_list.Count * 5;
+		gui.chunk = forests_generated;
+		gui.cell_count = forests_generated * 25;
 	}
 		
 	private void ApplyPath(Path _path)

@@ -24,7 +24,8 @@ public class BoltingAI : MonoBehaviour {
 		if(maxxed) alpha -= Time.deltaTime * 5.0f;
 		else alpha += Time.deltaTime * 5.0f;
 		if(alpha >= 0.9f) maxxed = true;
-		renderer.material.SetFloat("_Alpha", alpha);	
+		renderer.material.SetFloat("_Alpha", alpha * 2.0f);
+		if(alpha < 0.0f) Destroy(this.gameObject);
 	}
 	
 	void FixedUpdate () 

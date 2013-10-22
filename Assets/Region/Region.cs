@@ -31,7 +31,6 @@ public class Region {
 		foreach(Cell cell in this.GetCells()) 
 		{
 			cell.setType(Cell.CellType.Woods);
-			cell.cell_GameObject.Redraw();
 		}
 	}
 	
@@ -176,7 +175,7 @@ public class Region {
 		}
 		return cells_out;
 	}
-	//Gets all cells from MeshChunks
+	//Gets all cells from chunks
 	public List<Cell> GetCells()
 	{
 		List<Cell> cells_out = new List<Cell>();
@@ -185,6 +184,13 @@ public class Region {
 			foreach(Cell cell in chunk.getCells()) cells_out.Add(cell);
 		}
 		return cells_out;
+	}
+	
+	public List<MeshChunk> GetChunks()
+	{
+		List<MeshChunk> chunks_out = new List<MeshChunk>();
+		foreach(MeshChunk chunk in chunks) chunks_out.Add(chunk);
+		return chunks_out;		
 	}
 	
 	public bool ContainsCell(Cell _cell)
