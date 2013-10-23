@@ -7,25 +7,35 @@ public class BoltingAI : MonoBehaviour {
 	public Vector3 target;
 	
 	//for shader animation
-	private float alpha = 0.0f;
+	private float ttyl = 2.0f;
+	private float count = 0.0f;
 	private bool maxxed = false;
 	
 	void Start () 
 	{
+		float speed = 2.0f;
 		steering_behaviours = new SteeringBehaviors(this.gameObject);
-		if(target == null) return;
 		Vector3 target_vector = new Vector3(target.x, 0.0f, target.z);
-		Vector3 force = steering_behaviours.Seek(target_vector) * 1.25f;
+		Vector3 force = steering_behaviours.Seek(target_vector) * speed;
 		rigidbody.velocity = force;
+		ttyl = Vector3.Distance(target, this.transform.position) / speed * 2.0f;
 	}
 	
 	void Update()
 	{
-		if(maxxed) alpha -= Time.deltaTime * 5.0f;
-		else alpha += Time.deltaTime * 5.0f;
-		if(alpha >= 0.9f) maxxed = true;
-		renderer.material.SetFloat("_Alpha", alpha * 2.0f);
-		if(alpha < 0.0f) Destroy(this.gameObject);
+		if(maxxed) count -= Time.deltaTime;
+		else count += Time.deltaTime;
+		if(count >= ttyl / 2.0f) maxxed = true;
+		
+		//set alpha
+		float alpha = count / ttyl * 2.0f;
+		
+		renderer.material.SetFloat("_Alpha", alpha);
+		audio.volume = alpha;
+		if(count < 0.0f) 
+		{
+			Destroy(this.gameObject);
+		}
 	}
 	
 	void FixedUpdate () 

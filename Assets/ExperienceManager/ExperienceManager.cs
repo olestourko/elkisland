@@ -181,7 +181,9 @@ public class ExperienceManager : MonoBehaviour {
 			foreach(Vector3 position in chunk.GetRandomObjectPositions())
 			{
 				float distance = Vector3.Distance(player.transform.position, position);
-				if(distance > 6.0f && distance < 8.0f) 
+				float min = 6;
+				float max = 8;
+				if(distance > min && distance < max) 
 				{
 					positions.Add(position);
 					Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.green);
@@ -192,13 +194,15 @@ public class ExperienceManager : MonoBehaviour {
 		}
 		//Spawn shadow ghost every 1 second using random position
 		count_2 += Time.deltaTime;
-		if(count_2 > 0.1f) 
+		/*
+		if(count_2 > 1.0f) 
 		{
 			count_2 = 0.0f;
 			BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
 			ai.transform.position = positions[Random.Range(0, positions.Count-1)] + (Vector3.up * 0.11f);
 			ai.target = positions[Random.Range(0, positions.Count-1)];
 		}	
+		*/
 		
 		//Set lighting based on distance to path
 		gui.distance_to_path = worldGrid.closest_distance;

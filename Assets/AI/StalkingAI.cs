@@ -65,8 +65,7 @@ public class StalkingAI : MonoBehaviour {
 			return;
 		}
 		
-		
-		
+		//Set volume of footsteps based on speed
 		float volume = rigidbody.velocity.magnitude / 2.0f;
 		if(volume < 0.1f) volume = 0.0f;
 		audio.volume = volume;

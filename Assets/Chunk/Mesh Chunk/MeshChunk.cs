@@ -203,7 +203,7 @@ public class MeshChunk : MonoBehaviour {
 		}
 		//Apply vert weights to each quad
 		float factor = -0.01f;
-		//if(chunkType == ChunkType.Plain) factor = -0.5f;
+		//if(chunkType == ChunkType.Plain) factor = -0.05f;
 		foreach(WeightedQuad quad in quads)
 		{
 			quad.vertex_1.y = (quad.vertex_1_weight * factor);

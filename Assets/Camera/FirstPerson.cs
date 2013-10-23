@@ -8,10 +8,14 @@ public class FirstPerson : MonoBehaviour {
 	
 	public List<AudioClip> audioClips;
 	private float count = 0.0f;
-
+	
+	private AudioClip last_played;
+	private float wait_time = 0.0f;
+	
 	// Use this for initialization
 	void Start () 
 	{
+		last_played = audioClips[0];
 		Screen.lockCursor = true;
 	}
 	
@@ -57,11 +61,23 @@ public class FirstPerson : MonoBehaviour {
 	private void PlayWalkSound()
 	{
 		count += Time.fixedDeltaTime;
-		if(count > 1.0f) 
+		if(count > wait_time) 
 		{
-			int index = Random.Range(0, audioClips.Count-1);
-			audio.PlayOneShot(audioClips[index]);
+			List<AudioClip> valid_clips = new List<AudioClip>();
+			foreach(AudioClip clip in audioClips) valid_clips.Add(clip);
+			valid_clips.Remove(last_played);
+			
+			int index = Random.Range(0, valid_clips.Count);
+			audio.PlayOneShot(valid_clips[index]);
 			count = 0.0f;
+			last_played = valid_clips[index];
+			wait_time = last_played.length + 0.8f;
+			if(wait_time > 1.25f) wait_time = 1.25f;
 		}
+	}
+	
+	private void OnTriggerEnter(Collider _other)
+	{
+		Debug.Log("Collision has occoured");	
 	}
 }
