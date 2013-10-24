@@ -200,6 +200,20 @@ public class WorldGrid : MonoBehaviour {
 		}
 	}
 	
+	public List<Vector3> GetAllModelPositions()
+	{
+		List<Vector3> positions = new List<Vector3>();
+		foreach(MeshChunk chunk in chunks_list)
+		{
+			foreach(Vector3 position in chunk.GetRandomObjectPositions())
+			{
+				positions.Add(position);
+			}
+		}
+		return positions;
+	}
+	
+	
 	public MeshChunk GetChunkAt(Vector3 _position)
 	{
 		int i = (int)Mathf.Floor((_position.x + 0.5f) / 5) + 50;

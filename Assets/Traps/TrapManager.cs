@@ -33,6 +33,7 @@ public class TrapManager : MonoBehaviour {
 		}
 	}
 	
+	/*Deprecated*/
 	public void GenerateTraps(Path _path)
 	{
 		foreach(Cell cell in _path.getCells())
@@ -52,13 +53,36 @@ public class TrapManager : MonoBehaviour {
 			random_number = Random.Range(0, 11);
 			Trap trap = null;
 			
-			if(random_number < 7) trap = Instantiate(audio_trap_prefab) as AudioTrap;
+			if(random_number < 12) trap = Instantiate(audio_trap_prefab) as AudioTrap;
 			else trap = Instantiate(shadow_trap_prefab) as ShadowTrap;
 
  			
 			trap.transform.position = cell_spawn.position;
 			Vector3 trap_forward = Vector3.Normalize(cell.position - cell_spawn.position);
 			trap.transform.forward = trap_forward;
+			trap.transform.parent = this.transform;
+			traps.Add(trap);
+		}
+	}
+	
+	public void GenerateTraps(List<Vector3> _positions)
+	{
+		foreach(Vector3 position in _positions)
+		{
+			int random_number = Random.Range(0, 100);
+			if(random_number < 97) continue;
+						
+			//Spawn a random trap type
+			random_number = Random.Range(0, 11);
+			Trap trap = null;
+			
+			if(random_number < 12) trap = Instantiate(audio_trap_prefab) as AudioTrap;
+			else trap = Instantiate(shadow_trap_prefab) as ShadowTrap;
+
+ 			
+			trap.transform.position = position;
+			//Vector3 trap_forward = Vector3.Normalize(cell.position - cell_spawn.position);
+			//trap.transform.forward = trap_forward;
 			trap.transform.parent = this.transform;
 			traps.Add(trap);
 		}

@@ -8,9 +8,16 @@
             <Node name="Assets" expanded="True">
               <Node name="AI" expanded="True">
                 <Node name="FSM" expanded="True" />
-                <Node name="StalkingAI.cs" selected="True" />
               </Node>
-              <Node name="Region" expanded="True" />
+              <Node name="Chunk" expanded="True">
+                <Node name="Mesh Chunk" expanded="True" />
+              </Node>
+              <Node name="ExperienceManager" expanded="True" />
+              <Node name="GUI" expanded="True" />
+              <Node name="Traps" expanded="True">
+                <Node name="AudioTrap.cs" selected="True" />
+              </Node>
+              <Node name="WorldGrid" expanded="True" />
             </Node>
           </Node>
         </State>

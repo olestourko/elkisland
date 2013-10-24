@@ -9,10 +9,10 @@ public class ExperienceManager : MonoBehaviour {
 	public TrapManager trapManager;
 	
 	public Transform player;
-	public StalkingAI stalking_ai_prefab;
+	public BaseAI stalking_ai_prefab;
 	public BoltingAI bolting_ai_prefab;
 	
-	private List<StalkingAI> stalkingAIs = new List<StalkingAI>();
+	private List<BaseAI> stalkingAIs = new List<BaseAI>();
 	
 	//Lighting
 	private LightingState lighting_current;
@@ -107,16 +107,20 @@ public class ExperienceManager : MonoBehaviour {
 		//Generate traps
 		if(worldGrid.ready)
 		{
+			/*
 			worldGrid.ready = false;	
 			List<Path> paths = worldGrid.paths;
 			foreach(Path path in paths)
 			{
 				trapManager.GenerateTraps(path);	
 			}
+			*/
+			worldGrid.ready = false;
+			trapManager.GenerateTraps(worldGrid.GetAllModelPositions());
 		}
 		
 		//Activate traps and instantiate an AI
-		List<Trap> activated_traps = trapManager.ActivateNearbyTraps(player.position, 1.5f);
+		List<Trap> activated_traps = trapManager.ActivateNearbyTraps(player.position, 2.5f);
 		foreach(Trap trap in activated_traps)
 		{
 			trapManager.DestroyTrap(trap);
@@ -125,10 +129,14 @@ public class ExperienceManager : MonoBehaviour {
 			if(trap as AudioTrap != null)
 			{
 				if(stalkingAIs.Count >= 1) break;
-				StalkingAI ai = Instantiate(stalking_ai_prefab) as StalkingAI;
-				ai.worldGrid = worldGrid;
+				BaseAI ai = Instantiate(stalking_ai_prefab) as BaseAI;
+				List<Vector3> spawn_points = GetSpawnPointsInRange(8.0f, 10.0f);
+				int index = Random.Range(0, spawn_points.Count);
+				Vector3 new_position = new Vector3(spawn_points[index].x, ai.transform.position.y, spawn_points[index].z);
+				ai.transform.position = new_position;
+				
+				ai.obstacles = worldGrid.GetAllModelPositions();
 				ai.target = player;
-				ai.aiState = StalkingAI.AIState.Follow;
 				stalkingAIs.Add(ai);
 			}
 			//
@@ -138,21 +146,6 @@ public class ExperienceManager : MonoBehaviour {
 				ai.transform.position = trap.transform.position + (Vector3.up * 0.11f) + (trap.transform.forward * 0.75f);
 				ai.target = trap.transform.position + trap.transform.forward * 10.0f;
 			}
-		}
-		
-		//remove AIs who have followed the player enough
-		List<StalkingAI> ai_to_remove = new List<StalkingAI>();
-		foreach(StalkingAI ai in stalkingAIs)
-		{
-			if(ai.distance_travelled > 15.0f) ai_to_remove.Add(ai);
-		}
-		
-		while(ai_to_remove.Count > 0)
-		{
-			StalkingAI ai = ai_to_remove[0];
-			ai_to_remove.Remove(ai);
-			stalkingAIs.Remove(ai);
-			Destroy(ai.gameObject);
 		}
 		
 		
@@ -174,24 +167,18 @@ public class ExperienceManager : MonoBehaviour {
 		
 		
 		
-		//Create spawn points and targets for shadow ghosts
-		List<Vector3> positions = new List<Vector3>();
-		foreach(MeshChunk chunk in worldGrid.visible_region.GetChunks())
+		//Span stalker AI (new)
+		/*
+		foreach(Vector3 position in worldGrid.GetAllModelPositions())
 		{
-			foreach(Vector3 position in chunk.GetRandomObjectPositions())
-			{
-				float distance = Vector3.Distance(player.transform.position, position);
-				float min = 6;
-				float max = 8;
-				if(distance > min && distance < max) 
-				{
-					positions.Add(position);
-					Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.green);
-					Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.green);
-					//Debug.DrawLine(player.transform.position, position, Color.green);	
-				}
-			}
+			Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.magenta);
+			Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.magenta);
 		}
+		*/
+		
+		//Create spawn points and targets for shadow ghosts
+		GetSpawnPointsInRange(8.0f, 10.0f);
+		
 		//Spawn shadow ghost every 1 second using random position
 		count_2 += Time.deltaTime;
 		/*
@@ -243,6 +230,27 @@ public class ExperienceManager : MonoBehaviour {
 		plain_sounds.transform.position = player.transform.position;
 	}
 	
+	//Gets a lost of spawn points from the worldgrid with a range
+	public List<Vector3> GetSpawnPointsInRange(float _min, float _max)
+	{
+		List<Vector3> positions = new List<Vector3>();
+		foreach(MeshChunk chunk in worldGrid.visible_region.GetChunks())
+		{
+			foreach(Vector3 position in chunk.GetRandomObjectPositions())
+			{
+				float distance = Vector3.Distance(player.transform.position, position);
+				if(distance > _min && distance < _max) 
+				{
+					positions.Add(position);
+					Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.green);
+					Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.green);
+					//Debug.DrawLine(player.transform.position, position, Color.green);	
+				}
+			}
+		}
+		return positions;
+	}
+	
 	//Lighting
 	public void ChangeLighting(int _id)
 	{
@@ -271,7 +279,7 @@ public class ExperienceManager : MonoBehaviour {
 		RenderSettings.ambientLight = _lightingState.ambient_color;
 		RenderSettings.fogColor = _lightingState.fog_color;
 		RenderSettings.fogDensity = _lightingState.fog_density;
-		Camera.allCameras[1].backgroundColor = _lightingState.fog_color;
+		Camera.allCameras[0].backgroundColor = _lightingState.fog_color;
 		sky.renderer.material.SetColor("_Color", _lightingState.sky_color);
 		sky.renderer.material.SetFloat("_Factor", _lightingState.sky_factor);
 	}
