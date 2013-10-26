@@ -448,7 +448,12 @@ public class MeshChunk : MonoBehaviour {
 		{
 			Destroy(cell.model_random);
 			if(cell.cellType != Cell.CellType.Woods) return;
-			GameObject model_d = models_random[Random.Range(0, models_random.Count)];
+			
+			int index = Random.Range(0, models_random.Count-1);
+			int r = Random.Range(0, 100);
+			if(r > 97) index = models_random.Count-1;
+			
+			GameObject model_d = models_random[index];
 			cell.model_random = Instantiate(model_d) as GameObject;
 			float random_offset_x = Random.Range(-0.5f, 0.5f);
 			float random_offset_z = Random.Range(-0.5f, 0.5f);
