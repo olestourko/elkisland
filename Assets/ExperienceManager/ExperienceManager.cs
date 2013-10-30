@@ -10,7 +10,6 @@ public class ExperienceManager : MonoBehaviour {
 	
 	public Transform player;
 	public BT_AI stalking_ai_prefab;
-	public BoltingAI bolting_ai_prefab;
 	
 	private List<BT_AI> stalkingAIs = new List<BT_AI>();
 	
@@ -138,13 +137,6 @@ public class ExperienceManager : MonoBehaviour {
 				ai.obstacles = worldGrid.GetAllModelPositions();
 				ai.target = player;
 				stalkingAIs.Add(ai);
-			}
-			//
-			else
-			{
-				BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
-				ai.transform.position = trap.transform.position + (Vector3.up * 0.11f) + (trap.transform.forward * 0.75f);
-				ai.target = trap.transform.position + trap.transform.forward * 10.0f;
 			}
 		}
 		

@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Cell {
+public class Cell : Node {
 
 	public bool selected = false;
 	public CellType cellType;
