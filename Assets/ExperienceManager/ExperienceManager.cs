@@ -9,10 +9,10 @@ public class ExperienceManager : MonoBehaviour {
 	public TrapManager trapManager;
 	
 	public Transform player;
-	public BaseAI stalking_ai_prefab;
+	public BT_AI stalking_ai_prefab;
 	public BoltingAI bolting_ai_prefab;
 	
-	private List<BaseAI> stalkingAIs = new List<BaseAI>();
+	private List<BT_AI> stalkingAIs = new List<BT_AI>();
 	
 	//Lighting
 	private LightingState lighting_current;
@@ -129,7 +129,7 @@ public class ExperienceManager : MonoBehaviour {
 			if(trap as AudioTrap != null)
 			{
 				if(stalkingAIs.Count >= 1) break;
-				BaseAI ai = Instantiate(stalking_ai_prefab) as BaseAI;
+				BT_AI ai = Instantiate(stalking_ai_prefab) as BT_AI;
 				List<Vector3> spawn_points = GetSpawnPointsInRange(8.0f, 10.0f);
 				int index = Random.Range(0, spawn_points.Count);
 				Vector3 new_position = new Vector3(spawn_points[index].x, ai.transform.position.y, spawn_points[index].z);

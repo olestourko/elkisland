@@ -54,8 +54,6 @@ public class FirstPerson : MonoBehaviour {
 			transform.position -= new Vector3(transform.right.x, 0.0f, transform.right.z).normalized * factor;
 			PlayWalkSound();
 		}
-		
-		count += Time.fixedDeltaTime;	
 	}
 	
 	private void PlayWalkSound()
@@ -72,7 +70,7 @@ public class FirstPerson : MonoBehaviour {
 			count = 0.0f;
 			last_played = valid_clips[index];
 			wait_time = last_played.length + 0.8f;
-			if(wait_time > 1.25f) wait_time = 1.25f;
+			if(wait_time > 0.75f) wait_time = 0.75f;
 		}
 	}
 	

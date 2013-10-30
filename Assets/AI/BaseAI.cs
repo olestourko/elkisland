@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -59,7 +59,7 @@ public class BaseAI : MonoBehaviour {
 		Vector3 my_local_position = target.InverseTransformPoint(this.transform.position);
 		if(x > 0.0f && x < 1.0f) 
 		{
-			if(my_local_position.z > 1.0f) return true;
+			if(my_local_position.z >= 0.0f) return true;
 		}
 		return false;
 	}
