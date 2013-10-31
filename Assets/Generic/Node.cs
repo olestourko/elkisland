@@ -14,11 +14,12 @@ public class Node {
 	
 	public List<Node> adjacent_nodes = new List<Node>();
 	public Node() {}
-	public virtual int GetCost()
+	public virtual float GetCost(Node _to)
 	{
-		return cost;
+		return 0.0f;
 	}
-	public virtual void SetF(Node _start, Node _end)
+	//Sets the hueristic distance to target
+	public virtual void SetF(Node _end)
 	{
 		f = 1;	
 	}

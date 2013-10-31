@@ -32,6 +32,37 @@ public class BT_Stalker_Follow : BT_Node {
 			}
 		}
 		ai.ApproachTarget(closest);
+		
+		//Solve a path
+		SolverNode ai_position_node = new SolverNode(ai.transform.position);
+		SolverNode target_position_node = new SolverNode(closest);
+		ai_position_node.important = true;
+		target_position_node.important = true;
+		
+		List<Node> solver_nodes = new List<Node>();
+		solver_nodes.Add(ai_position_node);
+		solver_nodes.Add(target_position_node);
+		
+		foreach(Vector3 position in obstacles_in_range)
+		{
+			solver_nodes.Add(new SolverNode(position));
+		}
+		foreach(Node node in solver_nodes)
+		{
+			(node as SolverNode).AddAdjacentNodes(solver_nodes);
+		}
+		
+		
+		AStar_NodeBased solver = new AStar_NodeBased();
+		
+		List<Node> solved = solver.solve(solver_nodes, ai_position_node, target_position_node);
+		foreach(Node node in solved)
+		{
+			Auxilliary.DrawPoint((node as SolverNode).position, Color.yellow);
+		}
+		Auxilliary.DrawPoint(ai_position_node.position, Color.white);
+		Auxilliary.DrawPoint(target_position_node.position, Color.white);		
+		
 		return ReturnType.Success;
 	}
 	

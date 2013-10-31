@@ -35,6 +35,11 @@ public class ExperienceManager : MonoBehaviour {
 	private float count_2 = 0.0f;
 	public bool development_mode;
 	
+	
+	/*Player stats*/
+	public float distance_travelled = 0.0f;
+	private Vector3 player_previous_position = Vector3.zero;
+	
 	// Use this for initialization
 	void Start () 
 	{
@@ -90,6 +95,11 @@ public class ExperienceManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
+		//Get the distance that the player has travelled
+		float distance = (player.transform.position - player_previous_position).magnitude;
+		player_previous_position = player.transform.position;
+		distance_travelled += distance;
+		
 		//Blend lighting
 		if(count <= 1.0f)
 		{
@@ -140,33 +150,9 @@ public class ExperienceManager : MonoBehaviour {
 			}
 		}
 		
-		
-		//Change lighting color if player off path
-		/*
-		if(worldGrid.GetCellAt(player.position).cellType == Cell.CellType.Woods)
-		{
-			
-		}
-		else
-		{
-			
-		}
-		*/
-		
 		//Keep sky moving with player
 		Vector3 sky_offset = Vector3.forward * 10.0f;
 		sky.transform.position = player.transform.position + sky_offset;
-		
-		
-		
-		//Span stalker AI (new)
-		/*
-		foreach(Vector3 position in worldGrid.GetAllModelPositions())
-		{
-			Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.magenta);
-			Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.magenta);
-		}
-		*/
 		
 		//Create spawn points and targets for shadow ghosts
 		GetSpawnPointsInRange(8.0f, 10.0f);
@@ -234,9 +220,7 @@ public class ExperienceManager : MonoBehaviour {
 				if(distance > _min && distance < _max) 
 				{
 					positions.Add(position);
-					Debug.DrawLine(position + Vector3.right*0.5f, position - Vector3.right*0.5f, Color.green);
-					Debug.DrawLine(position + Vector3.forward*0.5f, position - Vector3.forward*0.5f, Color.green);
-					//Debug.DrawLine(player.transform.position, position, Color.green);	
+					//Auxilliary.DrawPoint(position, Color.gray);
 				}
 			}
 		}

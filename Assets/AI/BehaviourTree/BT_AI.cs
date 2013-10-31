@@ -24,32 +24,50 @@ public class BT_AI : MonoBehaviour {
 		blackboard = new BT_Stalker_Blackboard();
 		blackboard.ai = this;
 		blackboard.obstacles = this.obstacles;
-		blackboard.min_range = 4.0f;
-		blackboard.max_range = 6.0f;
-		
-		/*
+		blackboard.min_range = 2.0f;
+		blackboard.max_range = 4.0f;
+				
 		bt = new BT_Selector(blackboard);
-		BT_Stalker_C_SelectiveHide comp0 = new BT_Stalker_C_SelectiveHide();
-		bt.AddChild(comp0);
-		*/
 		
-		
-		bt = new BT_Selector(blackboard);
-		/*
+		BT_Timeout t0 = new BT_Timeout(4.0f);
 		BT_Sequence seq0 = new BT_Sequence();
-			BT_Stalker_Hidden c0 = new BT_Stalker_Hidden();
-			BT_Stalker_PlayerInRange c1 = new BT_Stalker_PlayerInRange(0.0f, 1.0f);
-			BT_Stalker_C_HideWithTimeout a0 = new BT_Stalker_C_HideWithTimeout();
-		BT_Stalker_C_SelectiveHide comp0 = new BT_Stalker_C_SelectiveHide();
+			BT_Stalker_CanSeeMe c0 = new BT_Stalker_CanSeeMe();
+			BT_Stalker_C_FullHide a0 = new BT_Stalker_C_FullHide();
+			BT_SetValue a1 = new BT_SetValue("hidding", 0);
+		BT_Sequence seq1 = new BT_Sequence();
+			BT_GetValue c1 = new BT_GetValue("hidding");
+			BT_Stalker_C_FullHide a2 = new BT_Stalker_C_FullHide();
+			BT_Selector sel0 = new BT_Selector();
+				BT_Sequence seq2 = new BT_Sequence();
+					//timeout
+					BT_SetValue a3 = new BT_SetValue("hidding", -1);
+				BT_SetValue a4 = new BT_SetValue("hidding", 0);	
+		
+		
+		BT_Stalker_Follow a5 = new BT_Stalker_Follow();
+		
+		
 		
 		bt.AddChild(seq0);
 			seq0.AddChild(c0);
-			seq0.AddChild(c1);
 			seq0.AddChild(a0);
-		bt.AddChild(comp0);
-		*/
-		
+			seq0.AddChild(a1);
+			seq0.AddChild(t0);
+		bt.AddChild(seq1);
+			seq1.AddChild(c1);
+			seq1.AddChild(a2);
+			seq1.AddChild(sel0);
+				sel0.AddChild(seq2);
+					seq2.AddChild(t0);
+					seq2.AddChild(a3);
+				sel0.AddChild(a4);
+		bt.AddChild(a5);	
+		/*
+		BT_SetValue a0 = new BT_SetValue("hidden", 0);
+		BT_GetValue c0 = new BT_GetValue("hidden");
+		bt.AddChild(c0);
 		bt.AddChild(new BT_Stalker_Follow());
+		*/
 	}
 	
 	// Update is called once per frame
@@ -106,7 +124,6 @@ public class BT_AI : MonoBehaviour {
 	{
 		if(count > wait_time) 
 		{
-			Debug.Log ("Played walk sound");
 			List<AudioClip> valid_clips = new List<AudioClip>();
 			foreach(AudioClip clip in audioClips) valid_clips.Add(clip);
 			valid_clips.Remove(last_played);
