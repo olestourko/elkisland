@@ -462,7 +462,7 @@ public class MeshChunk : MonoBehaviour {
 			cell.model_random.transform.position = cell.position + new Vector3(random_offset_x, y, random_offset_z);
 			cell.model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
 			cell.model_random.transform.parent = this.transform;
-			cell.model_random.renderer.material = random_model_material;			
+			//cell.model_random.renderer.material = random_model_material;			
 		}
 	}
 	public void GeneratePathModels()

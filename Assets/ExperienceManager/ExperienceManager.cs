@@ -138,15 +138,7 @@ public class ExperienceManager : MonoBehaviour {
 			if(trap as AudioTrap != null)
 			{
 				if(stalkingAIs.Count >= 1) break;
-				BT_AI ai = Instantiate(stalking_ai_prefab) as BT_AI;
-				List<Vector3> spawn_points = GetSpawnPointsInRange(8.0f, 10.0f);
-				int index = Random.Range(0, spawn_points.Count);
-				Vector3 new_position = new Vector3(spawn_points[index].x, ai.transform.position.y, spawn_points[index].z);
-				ai.transform.position = new_position;
-				
-				ai.obstacles = worldGrid.GetAllModelPositions();
-				ai.target = player;
-				stalkingAIs.Add(ai);
+				SpawnAI();
 			}
 		}
 		
@@ -207,6 +199,19 @@ public class ExperienceManager : MonoBehaviour {
 		forest_sounds.transform.position = player.transform.position;
 		plain_sounds.transform.position = player.transform.position;
 	}
+	
+	public void SpawnAI()
+	{
+		BT_AI ai = Instantiate(stalking_ai_prefab) as BT_AI;
+		List<Vector3> spawn_points = GetSpawnPointsInRange(8.0f, 10.0f);
+		int index = Random.Range(0, spawn_points.Count);
+		Vector3 new_position = new Vector3(spawn_points[index].x, ai.transform.position.y, spawn_points[index].z);
+		ai.transform.position = new_position;	
+		ai.obstacles = worldGrid.GetAllModelPositions();
+		ai.target = player;
+		stalkingAIs.Add(ai);
+	}
+	
 	
 	//Gets a lost of spawn points from the worldgrid with a range
 	public List<Vector3> GetSpawnPointsInRange(float _min, float _max)

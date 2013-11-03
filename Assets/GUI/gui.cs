@@ -70,7 +70,7 @@ public class gui : MonoBehaviour {
 		string command = match.Groups[0].ToString();
 		string remaining = terminalString.Substring(command.Length, terminalString.Length - command.Length);
 			
-		MatchCollection args_match = Regex.Matches(remaining, @"[A-Za-z0-9][A-Za-z0-9]*");
+		MatchCollection args_match = Regex.Matches(remaining, @"[A-Za-z0-9][A-Za-z0-9_]*");
 		int i = 0;
 		
 		List<string> args = new List<string>();
@@ -153,5 +153,28 @@ public class gui : MonoBehaviour {
 			}
 		}
 		
+		else if(command.Equals("spawn"))
+		{
+			if(args.Count != 1)
+			{
+				Debug.Log ("Usage: spawn <entity name>");
+			}
+			else
+			{
+				switch(args[0])
+				{
+				case "ai_stalker":
+					experienceManager.SpawnAI();
+					break;
+				case "ai_pather":
+					
+					break;
+				default:
+					Debug.Log ("Entity not found");
+					break;
+					
+				}
+			}
+		}
 	}
 }
