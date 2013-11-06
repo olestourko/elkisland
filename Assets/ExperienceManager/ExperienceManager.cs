@@ -8,9 +8,10 @@ public class ExperienceManager : MonoBehaviour {
 	public WorldGrid worldGrid;
 	public TrapManager trapManager;
 	
-	public Transform player;
-	public BT_AI stalking_ai_prefab;
 	
+	public Transform player;
+	public Player player_script;
+	public BT_AI stalking_ai_prefab;
 	private List<BT_AI> stalkingAIs = new List<BT_AI>();
 	
 	//Lighting
@@ -35,14 +36,10 @@ public class ExperienceManager : MonoBehaviour {
 	private float count_2 = 0.0f;
 	public bool development_mode;
 	
-	
-	/*Player stats*/
-	public float distance_travelled = 0.0f;
-	private Vector3 player_previous_position = Vector3.zero;
-	
+		
 	// Use this for initialization
 	void Start () 
-	{
+	{		
 		//black
 		lighting_0 = new LightingState(
 			new Color(0.0f, 0.0f, 0.0f),
@@ -81,11 +78,19 @@ public class ExperienceManager : MonoBehaviour {
 			0.15f
 		);
 		
-		lighting_2.sky_factor = 0.2f;
 		
-		lighting_current = lighting_0;
+		Lighting.sky = sky;
+		Lighting.previous = lighting_0;
+		Lighting.current = lighting_0;
+		Lighting.target = lighting_0;
+		Lighting.modifier = lighting_0;
+		Lighting.state = new Lighting_State_Idle();
+		Lighting.SetTarget(lighting_1);
+		
+		/*
 		if(development_mode) TweenLightingState(lighting_3);
 		else TweenLightingState(lighting_1);
+		*/
 		
 		//Get audio sources
 		forest_sounds = transform.Find("ForestSounds").gameObject;
@@ -95,35 +100,12 @@ public class ExperienceManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () 
 	{
-		//Get the distance that the player has travelled
-		float distance = (player.transform.position - player_previous_position).magnitude;
-		player_previous_position = player.transform.position;
-		distance_travelled += distance;
-		
-		//Blend lighting
-		if(count <= 1.0f)
-		{
-			lighting_blended = lighting_current.Blend(lighting_to, count);
-			ApplyLightingState(lighting_blended);
-			count += Time.deltaTime * 0.25f;
-		} 
-		else 
-		{
-			lighting_current = lighting_blended;
-			done_tweening = true;
-		}
-			
+		Lighting.Update();
+		gui.distance_travelled = player_script.distance_walked;
+				
 		//Generate traps
 		if(worldGrid.ready)
 		{
-			/*
-			worldGrid.ready = false;	
-			List<Path> paths = worldGrid.paths;
-			foreach(Path path in paths)
-			{
-				trapManager.GenerateTraps(path);	
-			}
-			*/
 			worldGrid.ready = false;
 			trapManager.GenerateTraps(worldGrid.GetAllModelPositions());
 		}
@@ -161,37 +143,45 @@ public class ExperienceManager : MonoBehaviour {
 		}	
 		*/
 		
-		//Set lighting based on distance to path
-		gui.distance_to_path = worldGrid.closest_distance;
-		if(count >= 1.0f)
-		{
-			float factor = worldGrid.closest_distance / 4.0f;
-			LightingState lighting_blended = lighting_1.Blend(lighting_2, factor);
-			//ApplyLightingState(lighting_blended);
-		}
+		//Modify lighting based on distance to path
+		float d = worldGrid.closest_distance;
+		gui.distance_to_path = d;
+		
+		d = d * 0.5f;
+		d -= 0.25f;
+		if(d > 0.75f) d = 0.75f;
+		
+		Lighting.f = d;
+		if(last_tweened_to != MeshChunk.ChunkType.Forest) Lighting.f = 0.0f;
+		
+				
 		//Set lighting based on the type of chunk the player is on
-		//Debug.Log (done_tweening + " | " + last_tweened_to);
 		switch(worldGrid.GetChunkAt(player.transform.position).chunkType)
 		{
 		case MeshChunk.ChunkType.Forest:
-			if(!done_tweening) break;
 			if(last_tweened_to != MeshChunk.ChunkType.Forest)
 			{
 				last_tweened_to = MeshChunk.ChunkType.Forest;
-				TweenLightingState(lighting_1);
+				Lighting.SetTarget(lighting_1);
 				plain_sounds.audio.volume = 0.0f;
 				forest_sounds.audio.volume = 1.0f;
 			}
-			break;
-		case MeshChunk.ChunkType.Plain:
+			/*
 			if(!done_tweening) break;
+			*/
+			break;
+
+		case MeshChunk.ChunkType.Plain:
 			if(last_tweened_to != MeshChunk.ChunkType.Plain)
 			{
 				last_tweened_to = MeshChunk.ChunkType.Plain;
-				TweenLightingState(lighting_4);
+				Lighting.SetTarget(lighting_4);
 				plain_sounds.audio.volume = 1.0f;
 				forest_sounds.audio.volume = 0.0f;
 			}
+			/*
+			if(!done_tweening) break;
+			*/
 			break;
 		}
 		
@@ -254,14 +244,5 @@ public class ExperienceManager : MonoBehaviour {
 		done_tweening = false;
 		count = 0.0f;	
 		lighting_to = _lightingState;
-	}
-	private void ApplyLightingState(LightingState _lightingState)
-	{
-		RenderSettings.ambientLight = _lightingState.ambient_color;
-		RenderSettings.fogColor = _lightingState.fog_color;
-		RenderSettings.fogDensity = _lightingState.fog_density;
-		Camera.allCameras[0].backgroundColor = _lightingState.fog_color;
-		sky.renderer.material.SetColor("_Color", _lightingState.sky_color);
-		sky.renderer.material.SetFloat("_Factor", _lightingState.sky_factor);
 	}
 }

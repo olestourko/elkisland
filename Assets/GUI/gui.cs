@@ -14,6 +14,7 @@ public class gui : MonoBehaviour {
 	public int cell_count;
 	public int path_count;
 	public float distance_to_path;
+	public float distance_travelled;
 	public string version_number;
 	
 	private WorldGrid worldGrid;
@@ -49,11 +50,13 @@ public class gui : MonoBehaviour {
 		GUI.skin.box.normal.background = texture;
 		if(!minimal)
 		{
-			GUI.Box(new Rect (0, Screen.height - 75, 170, 25), GUIContent.none);
+			GUI.Box(new Rect (0, Screen.height - 100, 130, 25), GUIContent.none);
+			GUI.Box(new Rect (0, Screen.height - 75, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 50, 100, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 25, 200, 25), GUIContent.none);
 			
-			GUI.Label(new Rect (10, Screen.height - 75 + 4, 100, 20), "d to path: " + distance_to_path, text);
+			GUI.Label(new Rect (10, Screen.height - 100 + 4, 100, 20), "d travelled: " + System.Math.Round(distance_travelled, 1), text);
+			GUI.Label(new Rect (10, Screen.height - 75 + 4, 100, 20), "d to path: " + System.Math.Round(distance_to_path, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 50 + 4, 100, 20), "cells: " + cell_count, text);
 			GUI.Label(new Rect (10, Screen.height - 25 + 4, 100, 20), "chunks: " + chunk, text);
 			GUI.Label(new Rect (110, Screen.height - 25 + 4, 100, 20), "paths: " + path_count, text);

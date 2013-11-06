@@ -25,6 +25,7 @@ public class LightingState {
 	//blender another lighting state
 	public LightingState Blend(LightingState _other, float _factor)
 	{
+		if(_factor < 0.0f) _factor = 0.0f;
 		_factor = Mathf.Clamp01(_factor);
 		float a = 1.0f - _factor;
 		float b = _factor;
