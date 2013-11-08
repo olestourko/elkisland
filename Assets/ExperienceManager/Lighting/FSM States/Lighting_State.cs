@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Lighting_State : State {
 
-	public virtual void Enter() {}
-	public virtual void Execute() {}
-	public virtual void Exit() {}
+	public override void Enter() {}
+	public override void Execute() {}
+	public override void Exit() {}
 }

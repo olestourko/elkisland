@@ -70,7 +70,7 @@ public class MeshChunk : MonoBehaviour {
 				
 				//Associate a cell and get the y offsets for quad verts based on cel heights
 				Cell cell = cells[i, j];
-				quad.vertex_1_weight = quad.vertex_2_weight = quad.vertex_3_weight = quad.vertex_4_weight = cell.CostMinusOne();
+				quad.vertex_1_weight = quad.vertex_2_weight = quad.vertex_3_weight = quad.vertex_4_weight = cell.height;
 				cell_to_quad.Add(cell, quad);
 			}
 		}
@@ -87,26 +87,26 @@ public class MeshChunk : MonoBehaviour {
 				if(cell.bottom.left != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne() + cell.bottom.left.CostMinusOne()) / 4.0f);				}
+						(cell.height + cell.bottom.height + cell.left.height + cell.bottom.left.height) / 4.0f);				}
 				else if(cell.left.bottom != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne() + cell.left.bottom.CostMinusOne()) / 4.0f);						
+						(cell.height + cell.bottom.height + cell.left.height + cell.left.bottom.height) / 4.0f);						
 				}
 				else
 				{
-					offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.left.CostMinusOne()) / 3.0f);	
+					offsets.Add((cell.height + cell.bottom.height + cell.left.height) / 3.0f);	
 				}
 			} 
 			else if(cell.bottom != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.bottom.height) / 2.0f);	
 			}
 			else if(cell.left != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.left.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.left.height) / 2.0f);	
 			} 
-			else offsets.Add(cell.CostMinusOne());
+			else offsets.Add(cell.height);
 					
 			//vert 1
 			if(cell.bottom != null && cell.right != null)
@@ -114,27 +114,27 @@ public class MeshChunk : MonoBehaviour {
 				if(cell.bottom.right != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne() + cell.bottom.right.CostMinusOne()) / 4.0f);
+						(cell.height + cell.bottom.height + cell.right.height + cell.bottom.right.height) / 4.0f);
 				}
 				else if(cell.right.bottom != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne() + cell.right.bottom.CostMinusOne()) / 4.0f);						
+						(cell.height + cell.bottom.height + cell.right.height + cell.right.bottom.height) / 4.0f);						
 				}
 				else
 				{
-					offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne() + cell.right.CostMinusOne()) / 3.0f);
+					offsets.Add((cell.height + cell.bottom.height + cell.right.height) / 3.0f);
 				}
 			} 
 			else if(cell.bottom != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.bottom.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.bottom.height) / 2.0f);	
 			}
 			else if(cell.right != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.right.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.right.height) / 2.0f);	
 			} 
-			else offsets.Add(cell.CostMinusOne());
+			else offsets.Add(cell.height);
 					
 			//vert 2
 			if(cell.top != null && cell.left != null)
@@ -142,27 +142,27 @@ public class MeshChunk : MonoBehaviour {
 				if(cell.top.left != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.top.left.CostMinusOne()) / 4.0f);
+						(cell.height + cell.top.height + cell.left.height + cell.top.left.height) / 4.0f);
 				}
 				else if(cell.left.top != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.left.top.CostMinusOne()) / 4.0f);						
+						(cell.height + cell.top.height + cell.left.height + cell.left.top.height) / 4.0f);						
 				}
 				else
 				{
-					offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne()) / 3.0f);
+					offsets.Add((cell.height + cell.top.height + cell.left.height) / 3.0f);
 				}
 			} 
 			else if(cell.top != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.top.height) / 2.0f);	
 			}
 			else if(cell.left != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.left.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.left.height) / 2.0f);	
 			} 
-			else offsets.Add(cell.CostMinusOne());
+			else offsets.Add(cell.height);
 					
 			//vert 3
 			if(cell.top != null && cell.right != null)
@@ -170,27 +170,27 @@ public class MeshChunk : MonoBehaviour {
 				if(cell.top.right != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.right.CostMinusOne() + cell.top.right.CostMinusOne()) / 4.0f);
+						(cell.height + cell.top.height + cell.right.height + cell.top.right.height) / 4.0f);
 				}
 				else if(cell.left.top != null)
 				{
 					offsets.Add(
-						(cell.CostMinusOne() + cell.top.CostMinusOne() + cell.left.CostMinusOne() + cell.left.top.CostMinusOne()) / 4.0f);						
+						(cell.height + cell.top.height + cell.left.height + cell.left.top.height) / 4.0f);						
 				}
 				else
 				{
-					offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne() + cell.right.CostMinusOne()) / 3.0f);
+					offsets.Add((cell.height + cell.top.height + cell.right.height) / 3.0f);
 				}
 			} 
 			else if(cell.top != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.top.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.top.height) / 2.0f);	
 			}
 			else if(cell.right != null)
 			{
-				offsets.Add((cell.CostMinusOne() + cell.right.CostMinusOne()) / 2.0f);	
+				offsets.Add((cell.height + cell.right.height) / 2.0f);	
 			} 
-			else offsets.Add(cell.CostMinusOne());
+			else offsets.Add(cell.height);
 		}
 		int quad_number = 0;
 		foreach(WeightedQuad quad in quads)
@@ -202,8 +202,7 @@ public class MeshChunk : MonoBehaviour {
 			quad_number += 4;
 		}
 		//Apply vert weights to each quad
-		float factor = -0.01f;
-		//if(chunkType == ChunkType.Plain) factor = -0.05f;
+		float factor = -0.15f;
 		foreach(WeightedQuad quad in quads)
 		{
 			quad.vertex_1.y = (quad.vertex_1_weight * factor);
@@ -229,7 +228,9 @@ public class MeshChunk : MonoBehaviour {
 		mesh.vertices = verts;
 		mesh.triangles = GetTris();
 		mesh.uv = uv;
-		mesh.RecalculateNormals();	
+		mesh.RecalculateNormals();
+		mesh.RecalculateBounds();
+		GetComponent<MeshCollider>().sharedMesh = mesh;
 	}
 	
 	private Vector3[] GetVerts()
@@ -295,6 +296,7 @@ public class MeshChunk : MonoBehaviour {
 					cells_list.Add(cell);
 				}
 				cell.cost = Random.Range(1, 4);
+				cell.height = cell.cost - 1.0f;
 				cell.setType(Cell.CellType.Woods);
 			}			
 		}
@@ -325,12 +327,12 @@ public class MeshChunk : MonoBehaviour {
 			{
 				if(!onPath)
 				{
-					cell.setType(Cell.CellType.Path_Start);
+					cell.setType(Cell.CellType.Path);
 					onPath = true;
 				}
 				else if(!this.hasCell(_path.getNext(cell)))
 				{
-					cell.setType(Cell.CellType.Path_End);
+					cell.setType(Cell.CellType.Path);
 					onPath = false;
 				}
 				else

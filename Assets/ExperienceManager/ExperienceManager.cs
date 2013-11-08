@@ -12,7 +12,7 @@ public class ExperienceManager : MonoBehaviour {
 	public Transform player;
 	public Player player_script;
 	public BT_AI stalking_ai_prefab;
-	private List<BT_AI> stalkingAIs = new List<BT_AI>();
+	private List<BT_AI> AIs = new List<BT_AI>();
 	
 	//Lighting
 	private LightingState lighting_current;
@@ -24,8 +24,6 @@ public class ExperienceManager : MonoBehaviour {
 	private LightingState lighting_2;
 	private LightingState lighting_3;
 	private LightingState lighting_4;
-	private float count = 0.0f;
-	private bool done_tweening = true;
 	private MeshChunk.ChunkType last_tweened_to;
 	public GameObject sky;
 	
@@ -83,14 +81,11 @@ public class ExperienceManager : MonoBehaviour {
 		Lighting.previous = lighting_0;
 		Lighting.current = lighting_0;
 		Lighting.target = lighting_0;
-		Lighting.modifier = lighting_0;
+		Lighting.modifier = lighting_2;
 		Lighting.state = new Lighting_State_Idle();
 		Lighting.SetTarget(lighting_1);
 		
-		/*
-		if(development_mode) TweenLightingState(lighting_3);
-		else TweenLightingState(lighting_1);
-		*/
+		if(development_mode) Lighting.SetTarget(lighting_3);
 		
 		//Get audio sources
 		forest_sounds = transform.Find("ForestSounds").gameObject;
@@ -119,7 +114,7 @@ public class ExperienceManager : MonoBehaviour {
 			//spawn stalker AI if audiotrap
 			if(trap as AudioTrap != null)
 			{
-				if(stalkingAIs.Count >= 1) break;
+				if(AIs.Count >= 1) break;
 				SpawnAI();
 			}
 		}
@@ -149,12 +144,22 @@ public class ExperienceManager : MonoBehaviour {
 		
 		d = d * 0.5f;
 		d -= 0.25f;
-		if(d > 0.75f) d = 0.75f;
+		if(d > 0.9f) d = 0.9f;
 		
 		Lighting.f = d;
 		if(last_tweened_to != MeshChunk.ChunkType.Forest) Lighting.f = 0.0f;
 		
-				
+		//Get distance to cottage
+		if(worldGrid.cottage != null) d = Vector3.Distance(player.transform.position, worldGrid.cottage.transform.position) / 10.0f;
+		else d = 0.0f;	
+		gui.distance_to_cottage = d;
+		foreach(BT_AI ai in AIs)
+		{
+			ai.min_range = d;
+			ai.max_range = d + 2.0f;
+		}
+		
+		
 		//Set lighting based on the type of chunk the player is on
 		switch(worldGrid.GetChunkAt(player.transform.position).chunkType)
 		{
@@ -166,9 +171,6 @@ public class ExperienceManager : MonoBehaviour {
 				plain_sounds.audio.volume = 0.0f;
 				forest_sounds.audio.volume = 1.0f;
 			}
-			/*
-			if(!done_tweening) break;
-			*/
 			break;
 
 		case MeshChunk.ChunkType.Plain:
@@ -179,9 +181,6 @@ public class ExperienceManager : MonoBehaviour {
 				plain_sounds.audio.volume = 1.0f;
 				forest_sounds.audio.volume = 0.0f;
 			}
-			/*
-			if(!done_tweening) break;
-			*/
 			break;
 		}
 		
@@ -199,7 +198,7 @@ public class ExperienceManager : MonoBehaviour {
 		ai.transform.position = new_position;	
 		ai.obstacles = worldGrid.GetAllModelPositions();
 		ai.target = player;
-		stalkingAIs.Add(ai);
+		AIs.Add(ai);
 	}
 	
 	
@@ -221,28 +220,5 @@ public class ExperienceManager : MonoBehaviour {
 		}
 		return positions;
 	}
-	
-	//Lighting
-	public void ChangeLighting(int _id)
-	{
-		switch(_id)
-		{
-		case 0:
-			TweenLightingState(lighting_0);
-			break;
-		case 1:
-			TweenLightingState(lighting_1);
-			break;
-		case 2:
-			TweenLightingState(lighting_2);
-			break;
-		}
-	}
-	
-	private void TweenLightingState(LightingState _lightingState)
-	{
-		done_tweening = false;
-		count = 0.0f;	
-		lighting_to = _lightingState;
-	}
+
 }

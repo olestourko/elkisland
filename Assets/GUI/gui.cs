@@ -14,6 +14,7 @@ public class gui : MonoBehaviour {
 	public int cell_count;
 	public int path_count;
 	public float distance_to_path;
+	public float distance_to_cottage;
 	public float distance_travelled;
 	public string version_number;
 	
@@ -50,11 +51,13 @@ public class gui : MonoBehaviour {
 		GUI.skin.box.normal.background = texture;
 		if(!minimal)
 		{
+			GUI.Box(new Rect (0, Screen.height - 125, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 100, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 75, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 50, 100, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 25, 200, 25), GUIContent.none);
 			
+			GUI.Label(new Rect (10, Screen.height - 125 + 4, 100, 20), "d to cottage: " + System.Math.Round(distance_to_cottage, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 100 + 4, 100, 20), "d travelled: " + System.Math.Round(distance_travelled, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 75 + 4, 100, 20), "d to path: " + System.Math.Round(distance_to_path, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 50 + 4, 100, 20), "cells: " + cell_count, text);
@@ -142,6 +145,7 @@ public class gui : MonoBehaviour {
 			}
 		}
 		
+		/*
 		else if(command.Equals("lighting"))
 		{
 			if(args.Count != 1)
@@ -155,6 +159,7 @@ public class gui : MonoBehaviour {
 				experienceManager.ChangeLighting(c);
 			}
 		}
+		*/
 		
 		else if(command.Equals("spawn"))
 		{

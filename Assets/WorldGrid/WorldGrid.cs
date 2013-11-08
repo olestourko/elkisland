@@ -20,6 +20,9 @@ public class WorldGrid : MonoBehaviour {
 	private List<MeshChunk> completed_chunks = new List<MeshChunk>();
 	public GameObject prescence;
 	
+	public GameObject cottage_prefab;
+	public GameObject cottage;
+	
 	public float closest_distance;
 	
 	//GUI
@@ -32,7 +35,6 @@ public class WorldGrid : MonoBehaviour {
 	
 	//Regeneration of visited areas
 	public Region visible_region = new Region();
-	bool visible_region_changed = false;
 	private float generation_timer = 0.0f;
 	
 	//Paths (experimental)
@@ -392,16 +394,9 @@ public class WorldGrid : MonoBehaviour {
 
 			if(paths.Count == 0)
 			{
-				/*
-				path = GenerateBranchPath(path);
-				paths.Add (path);
-				region.ApplyPath(path);
-				*/
-				
 				//Get the closest cell to the target
 				MeshChunk target_MeshChunk = region.GetClosestChunk(path_target.position);
 				Cell target_cell = target_MeshChunk.GetCellClosestTo(path_target.position);
-				target_cell.Select();
 				//Find a path to that cell
 				Path path = region.GeneratePath(region.GetCells()[0], target_cell);
 				paths.Add(path);
@@ -424,7 +419,6 @@ public class WorldGrid : MonoBehaviour {
 				//Get the closest cell to the target
 				MeshChunk target_chunk = region.GetClosestChunk(path_target.position);
 				Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
-				target_cell.Select();
 				
 				//Attempt to extend all path into the region
 				foreach(Path path in paths)
@@ -436,9 +430,22 @@ public class WorldGrid : MonoBehaviour {
 						{
 							path.Append(generated_path);
 							region.ApplyPath(path);
-							//foreach(Cell cell in path.getCells()) cell.cell_GameObject.Redraw();
 						}
 					}
+				}
+				
+				//Update mesh height (for paths);
+				foreach(MeshChunk chunk in chunks_list) 
+				{
+					chunk.SmoothMesh();
+					chunk.UpdateMesh();
+				}
+				
+				
+				if(cottage == null && paths[0].getCells().Count >= 40)
+				{
+					cottage = Instantiate(cottage_prefab) as GameObject;
+					cottage.transform.position = paths[0].getCells()[39].left.position;
 				}
 			}
 

@@ -6,6 +6,8 @@ public class BT_AI : MonoBehaviour {
 	
 	public Transform target;
 	public List<Vector3> obstacles;
+	public float min_range;
+	public float max_range;
 	
 	public BT_Node bt;
 	private BT_Stalker_Blackboard blackboard;
@@ -75,6 +77,8 @@ public class BT_AI : MonoBehaviour {
 	{
 		bt.Execute();
 		blackboard.elapsed_time += Time.deltaTime;
+		blackboard.min_range = min_range;
+		blackboard.max_range = max_range;
 		
 		/*Audio*/
 		count += Time.deltaTime;

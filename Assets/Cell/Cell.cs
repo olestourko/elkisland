@@ -23,10 +23,7 @@ public class Cell : Node {
 	
 	 //temporary for Astar
 	public Cell AStar_Parent;
-	public float g = 0;
-	public float f = 65536;
-	public float h = 0;
-	public int cost = 1;
+
 	//for threading
 	public Vector3 position;
 	
@@ -34,6 +31,8 @@ public class Cell : Node {
 	public GameObject model_instance;
 	public GameObject model_random;
 	
+	//Alternative weight used for height
+	public float height;
 	
 	public Cell() {}
 	
@@ -57,6 +56,14 @@ public class Cell : Node {
 	public void setType(CellType _type)
 	{
 		cellType = _type;
+		if(_type == CellType.Path) 
+		{
+			if(top != null) top.height = 0.0f;
+			if(bottom != null) bottom.height = 0.0f;
+			if(left != null) left.height = 0.0f;
+			if(right != null) right.height = 0.0f;
+			height = 0.0f;
+		}
 	}
 	
 	public void Select()
@@ -71,5 +78,4 @@ public class Cell : Node {
 	}
 	
 	public int CostMinusOne() { return cost - 1; }
-	
 }

@@ -3,10 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class AStar 
-{
-	//Has extra code for counting operations (to be moved or used)
-	private Cell end;
-	
+{	
 	public AStar()
 	{
 		
@@ -14,7 +11,6 @@ public class AStar
 	
 	public Path solve(List<Cell> _graph, Cell _start, Cell _end)
 	{		
-		end = _end;
 		int ops = 0;
 		List<Cell> open = new List<Cell>();
 		List<Cell> closed = new List<Cell>();

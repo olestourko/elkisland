@@ -4,13 +4,8 @@ using System.Collections.Generic;
 
 public class AStar_NodeBased 
 {
-	//Has extra code for counting operations (to be moved or used)
-	private Node end;
-
-	
 	public List<Node> solve(List<Node> _graph, Node _start, Node _end)
 	{
-		end = _end;
 		List<Node> open = new List<Node>();
 		List<Node> closed = new List<Node>();
 		_start.g = 0;
