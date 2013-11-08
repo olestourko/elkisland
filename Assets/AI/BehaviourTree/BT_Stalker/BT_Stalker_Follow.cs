@@ -52,7 +52,7 @@ public class BT_Stalker_Follow : BT_Node {
 			(node as SolverNode).AddAdjacentNodes(solver_nodes);
 		}
 		
-		
+		/*
 		AStar_NodeBased solver = new AStar_NodeBased();
 		
 		List<Node> solved = solver.solve(solver_nodes, ai_position_node, target_position_node);
@@ -62,6 +62,7 @@ public class BT_Stalker_Follow : BT_Node {
 		}
 		Auxilliary.DrawPoint(ai_position_node.position, Color.white);
 		Auxilliary.DrawPoint(target_position_node.position, Color.white);		
+		*/
 		
 		return ReturnType.Success;
 	}

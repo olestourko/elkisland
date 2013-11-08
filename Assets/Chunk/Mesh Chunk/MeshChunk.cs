@@ -460,13 +460,25 @@ public class MeshChunk : MonoBehaviour {
 			float random_offset_x = Random.Range(-0.5f, 0.5f);
 			float random_offset_z = Random.Range(-0.5f, 0.5f);
 			float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
-			float y = cell_to_quad[cell].GetAverageWeight() * 0.01f;
+			float y = cell.height * 0.07f;
+			//float y = cell_to_quad[cell].GetAverageWeight() * 0.01f;
 			cell.model_random.transform.position = cell.position + new Vector3(random_offset_x, y, random_offset_z);
 			cell.model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
 			cell.model_random.transform.parent = this.transform;
 			//cell.model_random.renderer.material = random_model_material;			
 		}
 	}
+	public void UpdateModels()
+	{
+		foreach(Cell cell in cells_list)
+		{
+			if(cell.model_random == null) continue;
+			float y =  cell.height * 0.07f;
+			Vector3 position = new Vector3(cell.model_random.transform.position.x, y, cell.model_random.transform.position.z);
+			cell.model_random.transform.position = position;
+		}
+	}
+	
 	public void GeneratePathModels()
 	{
 		foreach(Cell cell in cells_list)

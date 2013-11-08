@@ -235,7 +235,7 @@ public class WorldGrid : MonoBehaviour {
 		forests_generated++;
 		
 		MeshChunk chunk_to_instantiate = chunk_prefab_plain;
-		if(forests_generated < 48) chunk_to_instantiate = chunk_prefab_forest;
+		if(forests_generated < 72) chunk_to_instantiate = chunk_prefab_forest;
 		
 		MeshChunk chunk = Instantiate(chunk_to_instantiate) as MeshChunk;
 		chunk.transform.parent = this.transform;
@@ -439,6 +439,7 @@ public class WorldGrid : MonoBehaviour {
 				{
 					chunk.SmoothMesh();
 					chunk.UpdateMesh();
+					chunk.UpdateModels();
 				}
 				
 				

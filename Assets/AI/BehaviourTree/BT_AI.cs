@@ -104,7 +104,7 @@ public class BT_AI : MonoBehaviour {
 	{
 		SteeringBehaviors steering_behaviours = new SteeringBehaviors(this.gameObject);
 		Vector3 target_vector = new Vector3(_target.x, 0, _target.z);
-		Vector3 force = steering_behaviours.Seek(target_vector) * 400.0f * max_speed;
+		Vector3 force = steering_behaviours.Seek(target_vector) * 1000.0f * max_speed;
 		force.y = 0.0f; //cut off the y-axis
 		rigidbody.AddForce(force * Time.fixedDeltaTime);
 		if(rigidbody.velocity.magnitude > max_speed) rigidbody.velocity = Vector3.Normalize(rigidbody.velocity) * max_speed;
