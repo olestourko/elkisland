@@ -6,7 +6,10 @@ public class Path {
 	
 	private List<Cell> cells = new List<Cell>();
 	public Path partOf;
-
+	
+	public Vector3 target;
+	public Cell target_cell;
+	
 	// for animation
 	private int c = 0;
 	public Path()

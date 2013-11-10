@@ -137,7 +137,7 @@ public class Region {
 	{
 		List<Cell> cells = GetCells();
 		AStar astar = new AStar();
-		Path path = astar.solve(cells, _start, _end);		
+		Path path = astar.solve(cells, _start, _end);
 		return path;
 	}
 	

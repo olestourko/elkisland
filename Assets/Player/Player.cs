@@ -28,7 +28,7 @@ public class Player : MonoBehaviour {
 		distance_walked += (transform.position - last_position).magnitude;
 		last_position = transform.position;
 		
-		
+		count += Time.deltaTime;
 		if(Input.GetKey(KeyCode.W)) 
 		{
 			transform.position += new Vector3(transform.forward.x, 0.0f, transform.forward.z).normalized * factor * Time.deltaTime;
@@ -53,7 +53,6 @@ public class Player : MonoBehaviour {
 	
 	private void PlayWalkSound()
 	{
-		count += Time.fixedDeltaTime;
 		if(count > wait_time) 
 		{
 			List<AudioClip> valid_clips = new List<AudioClip>();

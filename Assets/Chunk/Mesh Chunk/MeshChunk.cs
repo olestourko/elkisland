@@ -28,7 +28,16 @@ public class MeshChunk : MonoBehaviour {
 	public GameObject model_turn;
 	public List<GameObject> model_straight;
 	public List<GameObject> models_random;
+		public List<float> spawn_probablity;
+		private List<Range> spawn_ranges;
+	
 	public Material random_model_material;
+	
+	//used for scaling the height of cells
+	private float height_factor = -0.15f;
+	
+	//used for generating the chunk without a worldgrid
+	public bool dev = false;
 	
 	public ChunkType chunkType;
 	public enum ChunkType
@@ -41,8 +50,26 @@ public class MeshChunk : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
 	{
+		/*Setup spawn probabilities*/
+		spawn_ranges = new List<Range>();
+		float range_last = 0.0f;
+		foreach(float p in spawn_probablity)
+		{
+			float range_end = range_last + p;				
+			spawn_ranges.Add(new Range(range_last, range_end));
+			range_last = range_end;
+		}
+	
 		Generate();
-		Init(this);
+		if(Init != null) Init(this);
+		if(dev)
+		{
+			SmoothMesh();
+			UpdateMesh();
+			GenerateRandomModels();
+			UpdateModels();
+		}
+		
 	}
 	
 	//--------------------------------------------------------------------------
@@ -80,7 +107,7 @@ public class MeshChunk : MonoBehaviour {
 	{
 		List<float> offsets = new List<float>();
 		foreach(Cell cell in cells_list)
-		{
+		{			
 			//vert 0
 			if(cell.bottom != null && cell.left != null)
 			{
@@ -202,13 +229,12 @@ public class MeshChunk : MonoBehaviour {
 			quad_number += 4;
 		}
 		//Apply vert weights to each quad
-		float factor = -0.15f;
 		foreach(WeightedQuad quad in quads)
 		{
-			quad.vertex_1.y = (quad.vertex_1_weight * factor);
-			quad.vertex_2.y = (quad.vertex_2_weight * factor);
-			quad.vertex_3.y = (quad.vertex_3_weight * factor);
-			quad.vertex_4.y = (quad.vertex_4_weight * factor);
+			quad.vertex_1.y = (quad.vertex_1_weight * height_factor);
+			quad.vertex_2.y = (quad.vertex_2_weight * height_factor);
+			quad.vertex_3.y = (quad.vertex_3_weight * height_factor);
+			quad.vertex_4.y = (quad.vertex_4_weight * height_factor);
 		}
 	}
 	public void UpdateMesh()
@@ -232,7 +258,6 @@ public class MeshChunk : MonoBehaviour {
 		mesh.RecalculateBounds();
 		GetComponent<MeshCollider>().sharedMesh = mesh;
 	}
-	
 	private Vector3[] GetVerts()
 	{
 		List<Vector3> verts_list = new List<Vector3>();
@@ -278,7 +303,6 @@ public class MeshChunk : MonoBehaviour {
 		
 		return tris_array;
 	}
-	
 	private void GenerateCells()
 	{
 		cells_list = new List<Cell>();
@@ -314,8 +338,6 @@ public class MeshChunk : MonoBehaviour {
 		}			
 	}
 	
-	
-	
 	public void ApplyPath(Path _path)
 	{
 		bool onPath = false;
@@ -342,12 +364,7 @@ public class MeshChunk : MonoBehaviour {
 			}	
 		}
 	}
-	
-	public void Redraw()
-	{
-		//foreach(Cell cell in cells_list) cell.cell_GameObject.Redraw();	
-	}
-	
+		
 	//--------------------------------------------------------------------------
 	// Get various sets of cells
 	//--------------------------------------------------------------------------
@@ -435,12 +452,6 @@ public class MeshChunk : MonoBehaviour {
 		return closest_cell;
 	}
 	
-	
-	
-	
-	
-	
-	
 	//--------------------------------------------------------------------------
 	// For instantiating cell related models (move later?)
 	//--------------------------------------------------------------------------
@@ -450,22 +461,18 @@ public class MeshChunk : MonoBehaviour {
 		{
 			Destroy(cell.model_random);
 			if(cell.cellType != Cell.CellType.Woods) return;
-			
-			int index = Random.Range(0, models_random.Count-1);
-			int r = Random.Range(0, 100);
-			if(r > 97) index = models_random.Count-1;
-			
-			GameObject model_d = models_random[index];
-			cell.model_random = Instantiate(model_d) as GameObject;
-			float random_offset_x = Random.Range(-0.5f, 0.5f);
-			float random_offset_z = Random.Range(-0.5f, 0.5f);
-			float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
-			float y = cell.height * 0.07f;
-			//float y = cell_to_quad[cell].GetAverageWeight() * 0.01f;
-			cell.model_random.transform.position = cell.position + new Vector3(random_offset_x, y, random_offset_z);
-			cell.model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
-			cell.model_random.transform.parent = this.transform;
-			//cell.model_random.renderer.material = random_model_material;			
+			float r = Random.Range(0, 1000) / 1000.0f;
+			foreach(Range range in spawn_ranges)
+			{
+				int range_index = spawn_ranges.IndexOf(range);
+				//This is the last possible range
+				if(range_index == spawn_ranges.Count-1 || range.WithinRange(r))
+				{
+					GameObject model_d = models_random[range_index];
+					InstantiateRandomModel(model_d, cell);
+					break;
+				}
+			}
 		}
 	}
 	public void UpdateModels()
@@ -473,7 +480,7 @@ public class MeshChunk : MonoBehaviour {
 		foreach(Cell cell in cells_list)
 		{
 			if(cell.model_random == null) continue;
-			float y =  cell.height * 0.07f;
+			float y = cell_to_quad[cell].GetAverageWeight() * 0.115f;
 			Vector3 position = new Vector3(cell.model_random.transform.position.x, y, cell.model_random.transform.position.z);
 			cell.model_random.transform.position = position;
 		}
@@ -567,10 +574,23 @@ public class MeshChunk : MonoBehaviour {
 	{
 		Destroy(_cell.model_random);
 		GameObject model_instance = Instantiate(_model) as GameObject;
-		model_instance.transform.position = _cell.position;
+		model_instance.transform.position = _cell.position + new Vector3(0.5f, 0, 0.5f);
 		model_instance.transform.parent = this.transform;
 		return model_instance;
 	}
+	private GameObject InstantiateRandomModel(GameObject _model, Cell _cell)
+	{
+		_cell.model_random = Instantiate(_model) as GameObject;
+		float random_offset_x = Random.Range(-0.5f, 0.5f);
+		float random_offset_z = Random.Range(-0.5f, 0.5f);
+		float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
+		float y = cell_to_quad[_cell].GetAverageWeight() * 0.05f;
+		_cell.model_random.transform.position = _cell.position + new Vector3(random_offset_x, y, random_offset_z) + new Vector3(0.5f, 0, 0.5f);
+		_cell.model_random.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
+		_cell.model_random.transform.parent = this.transform;	
+		return _cell.model_random;
+	}
+	
 	public List<Vector3> GetRandomObjectPositions()
 	{
 		List<Vector3> objects_out = new List<Vector3>();

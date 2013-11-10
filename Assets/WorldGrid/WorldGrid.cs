@@ -41,7 +41,7 @@ public class WorldGrid : MonoBehaviour {
 	private float t = 0.0f;
 	public List<Path> paths = new List<Path>();
 	public Transform path_target;
-	public Cell path_target_cell;
+
 	
 	//Threading (experimental)
 	Thread thread = null;
@@ -383,7 +383,6 @@ public class WorldGrid : MonoBehaviour {
 		{
 			if(selected_region != null) selected_region.Deselect();
 			Region region = new Region(completed_chunks);
-			completed_chunks = new List<MeshChunk>();
 			foreach(MeshChunk chunk in chunks_list) chunk.LinkCells();
 			foreach(MeshChunk chunk in chunks_list) 
 			{
@@ -391,14 +390,17 @@ public class WorldGrid : MonoBehaviour {
 				chunk.UpdateMesh();
 				chunk.GenerateRandomModels();
 			}
-
+			completed_chunks = new List<MeshChunk>();
+			
+			//Create initial path
 			if(paths.Count == 0)
 			{
-				//Get the closest cell to the target
-				MeshChunk target_MeshChunk = region.GetClosestChunk(path_target.position);
-				Cell target_cell = target_MeshChunk.GetCellClosestTo(path_target.position);
-				//Find a path to that cell
+				//Create a new path and set its target
+				MeshChunk target_chunk = region.GetClosestChunk(path_target.position);
+					Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
 				Path path = region.GeneratePath(region.GetCells()[0], target_cell);
+				path.target = path_target.position;
+				path.target_cell = target_cell;
 				paths.Add(path);
 				region.ApplyPath(path);
 				
@@ -407,22 +409,33 @@ public class WorldGrid : MonoBehaviour {
 					prescence.transform.position.y,
 					(path.getStart().position.z));
 				prescence.transform.position = player_position;
-				
-				//prescence.transform.LookAt(target_cell.cell_GameObject.transform.position);
-				
 				gui.path_count = paths.Count;
-				
 				ready = true;
 			}
+			//Paths exist!
 			else
-			{
-				//Get the closest cell to the target
-				MeshChunk target_chunk = region.GetClosestChunk(path_target.position);
-				Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
+			{	
+				//If the path has exceded a certain length, create a branch
+				if(paths[0].getLength() > 15 && paths.Count < 2)
+				{
+					Region everything = new Region(chunks_list);
+					Vector3 target = (Vector3.forward + Vector3.right) * 20;
+					
+					MeshChunk target_chunk = region.GetClosestChunk(target);
+						Cell target_cell = target_chunk.GetCellClosestTo(target);
+					Path path = everything.GeneratePath(paths[0].getCells()[4], target_cell);
+					path.target = target;
+					path.target_cell = target_cell;
+					paths.Add(path);
+					Debug.Log("Generating branching path: " + path.getLength());
+					everything.ApplyPath(path);
+				}
 				
 				//Attempt to extend all path into the region
 				foreach(Path path in paths)
 				{
+					MeshChunk target_chunk = region.GetClosestChunk(path.target);
+					Cell target_cell = target_chunk.GetCellClosestTo(path.target);
 					//There may be more than one path generaed fo
 					foreach(Path generated_path in region.GeneratePath(path, target_cell))
 					{
@@ -446,10 +459,9 @@ public class WorldGrid : MonoBehaviour {
 				if(cottage == null && paths[0].getCells().Count >= 40)
 				{
 					cottage = Instantiate(cottage_prefab) as GameObject;
-					cottage.transform.position = paths[0].getCells()[39].left.position;
+					cottage.transform.position = paths[0].getCells()[39].top.left.position;
 				}
 			}
-
 			selected_region = region;
 		}
 		//Update GUI
@@ -463,8 +475,6 @@ public class WorldGrid : MonoBehaviour {
 		{
 			chunk.ApplyPath(_path);	
 		}	
-		
-		foreach(MeshChunk chunk in chunks_list) chunk.Redraw();
 	}
 	
 }
