@@ -23,4 +23,9 @@ public class Node {
 	{
 		f = 1;	
 	}
+	
+	public List<Node> GetAdjacent()
+	{
+		return adjacent_nodes;	
+	}
 }

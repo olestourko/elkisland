@@ -36,6 +36,14 @@ public class Cell : Node {
 	
 	public Cell() {}
 	
+	public void UpdateAdjacentLinks()
+	{
+		if(!adjacent_nodes.Contains(left) && left != null) adjacent_nodes.Add(left);
+		if(!adjacent_nodes.Contains(right) && right != null) adjacent_nodes.Add(right);
+		if(!adjacent_nodes.Contains(top) && top != null) adjacent_nodes.Add(top);
+		if(!adjacent_nodes.Contains(bottom) && bottom != null) adjacent_nodes.Add(bottom);
+	}
+	
 	public List<Cell> getNeighbors()
 	{
 		List<Cell> cells = new List<Cell>();
@@ -71,11 +79,10 @@ public class Cell : Node {
 		if(selected) return;
 		selected = true;
 	}
-	
 	public void Deselect()
 	{
 		selected = false;
 	}
-	
+		
 	public int CostMinusOne() { return cost - 1; }
 }

@@ -48,6 +48,18 @@ public class Path {
 			}
 		}
 		return null;
+	}	
+	public Cell GetPrevious(Cell _cell)
+	{
+		if(cells.Contains(_cell))
+		{
+			int i = cells.IndexOf(_cell);
+			if(i-1 >= 0)
+			{
+				return cells[i-1];	
+			}
+		}
+		return null;
 	}
 	
 	public Cell getRandomCell()
@@ -135,4 +147,30 @@ public class Path {
 		return true;
 	}
 
+	public void DrawPerpVector()
+	{
+		Vector3 offset = new Vector3(0.5f, 0, 0.5f);
+		foreach(Cell cell in cells)
+		{
+			Vector3 perp = GetPerpendicular(cell);
+			Debug.DrawRay(cell.position + offset, perp * 4.0f, Color.red);
+		}
+	}
+	
+	public Vector3 GetPerpendicular(Cell _cell)
+	{
+		Cell previous = GetPrevious(_cell);
+		Cell next = getNext(_cell);
+		if(previous != null && next != null)
+		{
+			Vector3 a = (_cell.position - previous.position);
+			Vector3 b = (next.position - _cell.position);
+			Vector3 direction = (a + b) / 2.0f;
+			direction.Normalize();
+			Vector3 cross = Vector3.Cross(direction, Vector3.up);
+			return cross;
+		}
+		return Vector3.zero;
+	}
+	
 }

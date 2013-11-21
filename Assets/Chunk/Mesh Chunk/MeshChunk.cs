@@ -335,9 +335,9 @@ public class MeshChunk : MonoBehaviour {
 				if(j-1 >= 0) cells[i, j].bottom = cells[i, j-1];
 				if(j+1 < 5) cells[i, j].top = cells[i, j+1];
 			}
-		}			
+		}
+		foreach(Cell cell in cells_list) cell.UpdateAdjacentLinks();
 	}
-	
 	public void ApplyPath(Path _path)
 	{
 		bool onPath = false;
@@ -434,6 +434,8 @@ public class MeshChunk : MonoBehaviour {
 				bottom.cells[i, 4].top = cells[i, 0];
 			}
 		}
+		
+		foreach(Cell cell in cells_list) cell.UpdateAdjacentLinks();
 	}
 	
 	public Cell GetCellClosestTo(Vector3 _position)
@@ -552,7 +554,8 @@ public class MeshChunk : MonoBehaviour {
 				if(valid_cell_types.Contains(cell.top.cellType) && valid_cell_types.Contains(cell.right.cellType))
 				{
 					model_instance = InstantiateModel(model_turn, cell);
-					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, -1.0f);
+					//model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
 					continue;
 				}
 			}
@@ -562,8 +565,8 @@ public class MeshChunk : MonoBehaviour {
 				{
 					model_instance = InstantiateModel(model_turn, cell);
 					model_instance.transform.Rotate(new Vector3(0.0f, 0.0f, (Mathf.PI) * 57.3f));
-					//model_instance.transform.RotateAround(Vector3.up, Mathf.PI);
-					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
+					model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, -1.0f);
+					//model_instance.transform.localScale = new Vector3(-1.0f, 1.0f, 1.0f);
 					continue;
 				}
 			}

@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Threading;
 
 public class WorldGrid : MonoBehaviour {
+	
+	//for access outside of worldgrid
+	public static WorldGrid instance;
+	
 	public Cell cellPrefab;
 	public int size;
 
@@ -40,8 +44,12 @@ public class WorldGrid : MonoBehaviour {
 	//Paths (experimental)
 	private float t = 0.0f;
 	public List<Path> paths = new List<Path>();
-	public Transform path_target;
+	public Transform path_start;
+	public Transform path_end;
 
+	
+	//Path-Locations
+	private List<Path_Location_Pair> pairs = new List<Path_Location_Pair>();
 	
 	//Threading (experimental)
 	Thread thread = null;
@@ -51,7 +59,11 @@ public class WorldGrid : MonoBehaviour {
 	
 	void Start () 
 	{
+		instance = this;
 		gui = GameObject.Find("gui").GetComponent("gui") as gui;
+		
+		//GenerateRegion(path_target.position);
+		//GenerateRegion(Vector3.right * 60.0f);
 	}
 	
 	void Update()
@@ -91,53 +103,23 @@ public class WorldGrid : MonoBehaviour {
 				if(distance < closest_distance) closest_distance = distance;
 			}
 		}
+		
+		//Draw perpendicular vectors for path cells
+		//foreach(Path path in paths) path.DrawPerpVector();
+		
 	}
 	void FixedUpdate () 
 	{
 		/*--------------------------------------------------------------------------*/
-		/*MeshChunk Generation					               							*/
+		/*MeshChunk Generation					               						*/
 		/*--------------------------------------------------------------------------*/
-		int i = (int)Mathf.Floor(prescence.transform.position.x / 5) + 50;
-		int j = (int)Mathf.Floor(prescence.transform.position.z / 5) + 50;
-		
-		bool generate = false;
-		int size = kernel_view.GetSize();
-		int[,] kernel_array = kernel_view.GetArray();
-		for(int k = -size/2; k <= size/2; k++)
-		{
-			for(int l = -size/2; l <= size/2; l++)
-			{
-				if(kernel_array[k+size/2, l+size/2] == 1)
-				{
-					if(chunks[i + k, j + l] == null) generate = true;
-				}
-			}
-		}
-		
-		size = kernel_generate.GetSize();
-		kernel_array = kernel_generate.GetArray();
-		if(generate)
-		{
-			for(int k = -size/2; k <= size/2; k++)
-			{
-				for(int l = -size/2; l <= size/2; l++)
-				{
-					if(kernel_array[k+size/2, l+size/2] == 1)
-					{
-						if(chunks[i + k, j + l] == null)
-						{
-							CreateChunk(i + k, j + l);
-						}
-					}
-				}
-			}
-		}
-		
+		GenerateRegion(prescence.transform.position);
 		
 		
 		/*--------------------------------------------------------------------------*/
-		/*MeshChunk set Active/Inactive				           							*/
+		/*MeshChunk set Active/Inactive				           						*/
 		/*--------------------------------------------------------------------------*/
+		/*
 		Vector3 pos_prescence = new Vector3(prescence.transform.position.x, 0.0f, prescence.transform.position.z);
 		List<MeshChunk> chunks_to_deactivate = new List<MeshChunk>();
 		foreach(MeshChunk chunk in chunks_list)
@@ -161,17 +143,11 @@ public class WorldGrid : MonoBehaviour {
 			chunks_to_deactivate.Remove(chunk);
 			chunk.makeInactive();
 		}
-
+		*/
 	}
 	
 	void FixedUpdate_1s()
-	{
-		//Animate path (experimental)
-		foreach(Path path in paths)
-		{
-			//if(path != null) path.Animate();
-		}
-				
+	{				
 		//Regenerate MeshChunks which arent visible (experimental)
 		if(!IsRegenerating())
 		{
@@ -207,10 +183,7 @@ public class WorldGrid : MonoBehaviour {
 		List<Vector3> positions = new List<Vector3>();
 		foreach(MeshChunk chunk in chunks_list)
 		{
-			foreach(Vector3 position in chunk.GetRandomObjectPositions())
-			{
-				positions.Add(position);
-			}
+			foreach(Vector3 position in chunk.GetRandomObjectPositions()) positions.Add(position);
 		}
 		return positions;
 	}
@@ -230,6 +203,47 @@ public class WorldGrid : MonoBehaviour {
 		return cell;
 	}
 	
+	//Generates a region around a position, using the specified kernel.
+	public void GenerateRegion(Vector3 _position)
+	{
+		int i = (int)Mathf.Floor(_position.x / 5) + 50;
+		int j = (int)Mathf.Floor(_position.z / 5) + 50;
+		
+		bool generate = false;
+		int size = kernel_view.GetSize();
+		int[,] kernel_array = kernel_view.GetArray();
+		
+		for(int k = -size/2; k <= size/2; k++)
+		{
+			for(int l = -size/2; l <= size/2; l++)
+			{
+				if(kernel_array[k+size/2, l+size/2] == 1)
+				{
+					if(chunks[i + k, j + l] == null) generate = true;
+				}
+			}
+		}
+		
+		size = kernel_generate.GetSize();
+		kernel_array = kernel_generate.GetArray();
+		if(generate)
+		{
+			for(int k = -size/2; k <= size/2; k++)
+			{
+				for(int l = -size/2; l <= size/2; l++)
+				{
+					if(kernel_array[k+size/2, l+size/2] == 1)
+					{
+						if(chunks[i + k, j + l] == null) 
+						{
+							CreateChunk(i + k, j + l);
+							generate = true;
+						}
+					}
+				}
+			}
+		}	
+	}	
 	public MeshChunk CreateChunk(int _i, int _j)
 	{
 		forests_generated++;
@@ -361,17 +375,7 @@ public class WorldGrid : MonoBehaviour {
 		}
 		//Debug.Log ("--- Path Thread Complete");
 	}
-	
-	private Path GenerateBranchPath(Path _path)
-	{
-		List<Cell> cells = _path.getCells();
-		Region region = new Region();
-		foreach(MeshChunk chunk in chunks_list) region.AddChunk(chunk);
-		Cell start = cells[Random.Range(0, cells.Count-1)];
-		Cell end = region.GetCells()[Random.Range(0, region.GetCells().Count-1)];
-		return region.GeneratePath(start, end);
-	}
-	
+		
 	/*--------------------------------------------------------------------------*/
 	
 	
@@ -394,16 +398,20 @@ public class WorldGrid : MonoBehaviour {
 			
 			//Create initial path
 			if(paths.Count == 0)
-			{
-				//Create a new path and set its target
-				MeshChunk target_chunk = region.GetClosestChunk(path_target.position);
-					Cell target_cell = target_chunk.GetCellClosestTo(path_target.position);
-				Path path = region.GeneratePath(region.GetCells()[0], target_cell);
-				path.target = path_target.position;
-				path.target_cell = target_cell;
+			{				
+				//Create a new path and set its targets
+				MeshChunk start_chunk = region.GetClosestChunk(path_start.position);
+					Cell start_cell = start_chunk.GetCellClosestTo(path_start.position);
+				MeshChunk end_chunk = region.GetClosestChunk(path_end.position);
+					Cell end_cell = end_chunk.GetCellClosestTo(path_end.position);
+				
+				
+				Path path = region.GeneratePath(start_cell, end_cell);
+				path.target = path_end.position;
+				path.target_cell = end_cell;
 				paths.Add(path);
 				region.ApplyPath(path);
-				
+								
 				//Set player position to start of path(to be changed later. also note that this will cause another region to generate.
 				Vector3 player_position = new Vector3(path.getStart().position.x,
 					prescence.transform.position.y,
@@ -414,20 +422,40 @@ public class WorldGrid : MonoBehaviour {
 			}
 			//Paths exist!
 			else
-			{	
+			{					
 				//If the path has exceded a certain length, create a branch
-				if(paths[0].getLength() > 15 && paths.Count < 2)
+				if(paths[0].getLength() > 15 && pairs.Count < 1)
 				{
-					Region everything = new Region(chunks_list);
-					Vector3 target = (Vector3.forward + Vector3.right) * 20;
+					//Get all cells accessible from path start
+					Fill fill = new Fill();
+					List<Node> filled_nodes = fill.Solve(region.GetCells()[0]);
+					List<MeshChunk> filled_chunks = new List<MeshChunk>();
+					foreach(Node node in filled_nodes)
+					{
+						foreach(MeshChunk chunk in chunks_list)
+						{
+							if(chunk.hasCell(node as Cell) && !filled_chunks.Contains(chunk))
+								filled_chunks.Add(chunk);
+						}
+					}
 					
-					MeshChunk target_chunk = region.GetClosestChunk(target);
+					Debug.Log(filled_nodes.Count);
+					Debug.Log(filled_chunks.Count);
+					
+					Region everything = new Region(filled_chunks);
+					Cell path_cell = paths[0].getCells()[4];
+					Vector3 target = path_cell.position + (paths[0].GetPerpendicular(path_cell) * 8.0f);
+					
+					MeshChunk target_chunk = everything.GetClosestChunk(target);
 						Cell target_cell = target_chunk.GetCellClosestTo(target);
 					Path path = everything.GeneratePath(paths[0].getCells()[4], target_cell);
 					path.target = target;
 					path.target_cell = target_cell;
-					paths.Add(path);
-					Debug.Log("Generating branching path: " + path.getLength());
+					
+					Path_Location_Pair pair = new Path_Location_Pair();
+					pair.path = path;
+					pairs.Add(pair);
+					
 					everything.ApplyPath(path);
 				}
 				
@@ -436,7 +464,7 @@ public class WorldGrid : MonoBehaviour {
 				{
 					MeshChunk target_chunk = region.GetClosestChunk(path.target);
 					Cell target_cell = target_chunk.GetCellClosestTo(path.target);
-					//There may be more than one path generaed fo
+					//There may be more than one path generated fo
 					foreach(Path generated_path in region.GeneratePath(path, target_cell))
 					{
 						if(generated_path != null)
@@ -447,23 +475,33 @@ public class WorldGrid : MonoBehaviour {
 					}
 				}
 				
-				//Update mesh height (for paths);
-				foreach(MeshChunk chunk in chunks_list) 
+				//Attempt to extend each paith in path-location pairs into the region
+				foreach(Path_Location_Pair pair in pairs)
 				{
-					chunk.SmoothMesh();
-					chunk.UpdateMesh();
-					chunk.UpdateModels();
-				}
-				
-				
-				if(cottage == null && paths[0].getCells().Count >= 40)
-				{
-					cottage = Instantiate(cottage_prefab) as GameObject;
-					cottage.transform.position = paths[0].getCells()[39].top.left.position;
-				}
+					MeshChunk target_chunk = region.GetClosestChunk(pair.path.target);
+					Cell target_cell = target_chunk.GetCellClosestTo(pair.path.target);
+					//There may be more than one path generaed fo
+					foreach(Path generated_path in region.GeneratePath(pair.path, target_cell))
+					{
+						if(generated_path != null)
+						{
+							pair.path.Append(generated_path);
+							region.ApplyPath(pair.path);
+						}
+					}	
+				}				
 			}
 			selected_region = region;
 		}
+				
+		//Update mesh height (for paths);
+		foreach(MeshChunk chunk in chunks_list) 
+		{
+			chunk.SmoothMesh();
+			chunk.UpdateMesh();
+			chunk.UpdateModels();
+		}		
+		
 		//Update GUI
 		gui.chunk = forests_generated;
 		gui.cell_count = forests_generated * 25;

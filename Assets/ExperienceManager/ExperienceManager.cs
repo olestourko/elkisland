@@ -206,7 +206,8 @@ public class ExperienceManager : MonoBehaviour {
 	public List<Vector3> GetSpawnPointsInRange(float _min, float _max)
 	{
 		List<Vector3> positions = new List<Vector3>();
-		foreach(MeshChunk chunk in worldGrid.visible_region.GetChunks())
+		//foreach(MeshChunk chunk in worldGrid.visible_region.GetChunks())
+		foreach(MeshChunk chunk in worldGrid.chunks_list)
 		{
 			foreach(Vector3 position in chunk.GetRandomObjectPositions())
 			{
