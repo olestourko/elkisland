@@ -75,7 +75,7 @@ public class Region {
 		List<Cell> cells = this.GetCells();
 		if(this.ContainsPath(_path)) 
 		{
-			//Debug.Log ("1: This region contains the path");
+			Debug.Log ("1: This region contains the path");
 			bool on_path = false;
 			Cell start = null;
 			Cell end = null;
@@ -90,7 +90,7 @@ public class Region {
 						start = cell;
 					}
 				}
-				//If next in path isn't in the cells and a pah is being currently constructed
+				//If next in path isn't in the cells and a path is being currently constructed
 				if(!cells.Contains(_path.getNext(cell)) && on_path)
 				{
 					on_path = false;
@@ -144,7 +144,7 @@ public class Region {
 	public void ApplyPath(Path _path)
 	{
 		foreach(MeshChunk chunk in chunks) chunk.ApplyPath(_path);
-		foreach(MeshChunk chunk in chunks) chunk.GeneratePathModels();
+		//foreach(MeshChunk chunk in chunks) chunk.GeneratePathModels();
 	}
 		
 	//Get MeshChunks bordering this region (inside)
@@ -213,6 +213,12 @@ public class Region {
 			if(cells.Contains(cell)) return true;
 		}
 		return false;
+	}
+
+	public Cell GetClosestCell(Vector3 _position)
+	{
+		MeshChunk closest_chunk = GetClosestChunk(_position);
+		return closest_chunk.GetCellClosestTo(_position);
 	}
 	
 	public MeshChunk GetClosestChunk(Vector3 _position)

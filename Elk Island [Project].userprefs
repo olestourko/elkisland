@@ -1,15 +1,18 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\WorldGrid\WorldGrid.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\ExperienceManager\Exploration\FSM States\Exploration_State_L2.cs">
     <Files>
-      <File FileName="Assets\Graph Solvers\Fill.cs" Line="12" Column="1" />
-      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="496" Column="3" />
-      <File FileName="Assets\Path\Path.cs" Line="1" Column="1" />
-      <File FileName="Assets\Region\Region.cs" Line="1" Column="1" />
-      <File FileName="Assets\Chunk\Mesh Chunk\MeshChunk.cs" Line="365" Column="4" />
+      <File FileName="Assets\WorldGrid\WorldGrid.cs" Line="516" Column="20" />
+      <File FileName="Assets\Chunk\Mesh Chunk\MeshChunk.cs" Line="1" Column="1" />
+      <File FileName="Assets\ExperienceManager\ExperienceManager.cs" Line="1" Column="1" />
       <File FileName="Assets\Cell\Cell.cs" Line="1" Column="1" />
-      <File FileName="Assets\Locations\Path_Location_Pair.cs" Line="10" Column="1" />
-      <File FileName="Assets\Generic\Node.cs" Line="1" Column="1" />
+      <File FileName="Assets\Region\Region.cs" Line="1" Column="1" />
+      <File FileName="Assets\Locations\Location.cs" Line="1" Column="1" />
+      <File FileName="Assets\ExperienceManager\Exploration\FSM States\Exploration_State.cs" Line="1" Column="1" />
+      <File FileName="Assets\ExperienceManager\Lighting\FSM States\Lighting_State.cs" Line="1" Column="1" />
+      <File FileName="Assets\ExperienceManager\Exploration\FSM States\Exploration_State_L1.cs" Line="1" Column="1" />
+      <File FileName="Assets\ExperienceManager\Exploration\FSM States\Exploration_State_L0.cs" Line="13" Column="37" />
+      <File FileName="Assets\ExperienceManager\Exploration\FSM States\Exploration_State_L2.cs" Line="13" Column="37" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

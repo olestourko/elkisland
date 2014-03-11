@@ -111,6 +111,43 @@ public class Path {
 			cells = new_cells;
 			return true;
 		}
+		/*
+		if(this.getStart().IsAdjacent(_path.getStart())) 
+		{
+			Debug.Log ("Path appended (head | head)");
+			List<Cell> new_cells = new List<Cell>();
+			foreach(Cell cell in _path.getCells()) new_cells.Add(cell);
+			foreach(Cell cell in cells) new_cells.Add(cell);
+			cells = new_cells;
+			return true;
+		}
+		*/
+		if(this.getStart() == _path.getEnd())
+		{
+			Debug.Log ("Path appended (start | end)");
+			return true;
+		}
+		if(this.getStart() == _path.getStart())
+		{
+			Debug.Log ("Path appended (start | start)");
+			return true;
+		}
+		if(this.getEnd() == _path.getEnd())
+		{
+			Debug.Log ("Path appended (end | end)");
+			return true;
+		}
+		if(this.getEnd() == _path.getStart())
+		{
+			Debug.Log ("Path appended (end | start)");
+			for(int i = 1; i < _path.getCells().Count; i++)
+			{
+				cells.Add(_path.getCells()[i]);
+			}
+			return true;
+		}
+
+		Debug.Log ("Path append failed");
 		return false;
 	}
 	
@@ -172,5 +209,9 @@ public class Path {
 		}
 		return Vector3.zero;
 	}
-	
+
+	public bool IsComplete()
+	{
+		return (target_cell == getEnd());
+	}
 }

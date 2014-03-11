@@ -14,10 +14,13 @@ public class gui : MonoBehaviour {
 	public int cell_count;
 	public int path_count;
 	public float distance_to_path;
-	public float distance_to_cottage;
 	public float distance_travelled;
 	public string version_number;
-	
+
+
+	public static string location_description;
+	public bool render_description = false;
+
 	private WorldGrid worldGrid;
 	private ExperienceManager experienceManager;
 	
@@ -51,13 +54,13 @@ public class gui : MonoBehaviour {
 		GUI.skin.box.normal.background = texture;
 		if(!minimal)
 		{
-			GUI.Box(new Rect (0, Screen.height - 125, 130, 25), GUIContent.none);
+			//GUI.Box(new Rect (0, Screen.height - 125, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 100, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 75, 130, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 50, 100, 25), GUIContent.none);
 			GUI.Box(new Rect (0, Screen.height - 25, 200, 25), GUIContent.none);
 			
-			GUI.Label(new Rect (10, Screen.height - 125 + 4, 100, 20), "d to cottage: " + System.Math.Round(distance_to_cottage, 1), text);
+			//GUI.Label(new Rect (10, Screen.height - 125 + 4, 100, 20), "d to cottage: " + System.Math.Round(distance_to_cottage, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 100 + 4, 100, 20), "d travelled: " + System.Math.Round(distance_travelled, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 75 + 4, 100, 20), "d to path: " + System.Math.Round(distance_to_path, 1), text);
 			GUI.Label(new Rect (10, Screen.height - 50 + 4, 100, 20), "cells: " + cell_count, text);
@@ -67,6 +70,15 @@ public class gui : MonoBehaviour {
 		//Version number
 		GUI.Box(new Rect (Screen.width - 150, Screen.height - 25, 150, 30), GUIContent.none);
 		GUI.Label(new Rect(Screen.width - 140, Screen.height - 25 + 4, 150, 30), version_number, text);
+
+		//Overlay for location descriptions
+		if(render_description)
+		{
+			Rect overlay = new Rect (0 + 50, 0 + 50 + 200, Screen.width - 100, Screen.height - 100 - 200);
+			Rect overlay_text = new Rect (0 + 54, 0 + 54 + 200, Screen.width - 108, Screen.height - 108 - 200);
+			GUI.Box(overlay, GUIContent.none);
+			GUI.Label(overlay_text, location_description);
+		}
 	}
 	
 	private void processInput()

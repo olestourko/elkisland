@@ -33,8 +33,13 @@ public class ExperienceManager : MonoBehaviour {
 	//for AI spawning on interval (to be moved)
 	private float count_2 = 0.0f;
 	public bool development_mode;
-	
-		
+
+	//for exploration
+	public Exploration_State exploration_state;
+	public Exploration_State exploration_state_prev = null;
+	public Location last_visited_location = null;	
+	public List<Location> locations_visited = new List<Location>();
+
 	// Use this for initialization
 	void Start () 
 	{		
@@ -51,7 +56,8 @@ public class ExperienceManager : MonoBehaviour {
 			new Color(0.184f, 0.199f, 0.199f),		//ambient
 			new Color(0.117f,  0.293f, 0.293f),		//fog
 			new Color(0.117f,  0.293f, 0.293f),		//sky
-			0.2f
+			//0.2f
+			0.025f
 		);
 		//dark
 		lighting_2 = new LightingState(
@@ -88,8 +94,11 @@ public class ExperienceManager : MonoBehaviour {
 		if(development_mode) Lighting.SetTarget(lighting_3);
 		
 		//Get audio sources
-		forest_sounds = transform.Find("ForestSounds").gameObject;
-		plain_sounds = transform.Find("PlainSounds").gameObject;
+		forest_sounds = GameObject.Find("ForestSounds").gameObject;
+		plain_sounds = GameObject.Find("PlainSounds").gameObject;
+
+		//Exploration states
+		ChangeState(new Exploration_State_L0());
 	}
 	
 	// Update is called once per frame
@@ -128,16 +137,7 @@ public class ExperienceManager : MonoBehaviour {
 		
 		//Spawn shadow ghost every 1 second using random position
 		count_2 += Time.deltaTime;
-		/*
-		if(count_2 > 1.0f) 
-		{
-			count_2 = 0.0f;
-			BoltingAI ai = Instantiate(bolting_ai_prefab) as BoltingAI;
-			ai.transform.position = positions[Random.Range(0, positions.Count-1)] + (Vector3.up * 0.11f);
-			ai.target = positions[Random.Range(0, positions.Count-1)];
-		}	
-		*/
-		
+				
 		//Modify lighting based on distance to path
 		float d = worldGrid.closest_distance;
 		gui.distance_to_path = d;
@@ -148,11 +148,7 @@ public class ExperienceManager : MonoBehaviour {
 		
 		Lighting.f = d;
 		if(last_tweened_to != MeshChunk.ChunkType.Forest) Lighting.f = 0.0f;
-		
-		//Get distance to cottage
-		if(worldGrid.cottage != null) d = Vector3.Distance(player.transform.position, worldGrid.cottage.transform.position) / 10.0f;
-		else d = 0.0f;	
-		gui.distance_to_cottage = d;
+
 		foreach(BT_AI ai in AIs)
 		{
 			ai.min_range = d;
@@ -184,9 +180,26 @@ public class ExperienceManager : MonoBehaviour {
 			break;
 		}
 		
-		//audio
-		forest_sounds.transform.position = player.transform.position;
-		plain_sounds.transform.position = player.transform.position;
+
+		//Location triggers
+		bool r = false;
+		foreach(Path_Location_Pair pair in worldGrid.pairs)
+		{
+			if(pair.location == null) continue;
+			if(pair.location.WithinRange(player.transform.position)) 
+			{
+				r = true;
+				last_visited_location = pair.location;
+				exploration_state.Execute(this);
+				exploration_state_prev = exploration_state;
+
+				if(!locations_visited.Contains(pair.location)) 
+				{
+					locations_visited.Add(pair.location);
+				}
+			}
+		}
+		gui.render_description = r;
 	}
 	
 	public void SpawnAI()
@@ -200,8 +213,7 @@ public class ExperienceManager : MonoBehaviour {
 		ai.target = player;
 		AIs.Add(ai);
 	}
-	
-	
+
 	//Gets a lost of spawn points from the worldgrid with a range
 	public List<Vector3> GetSpawnPointsInRange(float _min, float _max)
 	{
@@ -220,6 +232,14 @@ public class ExperienceManager : MonoBehaviour {
 			}
 		}
 		return positions;
+	}
+
+	public void ChangeState(State _state)
+	{
+		exploration_state_prev = exploration_state;
+		if(exploration_state != null) exploration_state.Exit(this);
+		exploration_state = _state as Exploration_State;
+		exploration_state.Enter(this);
 	}
 
 }

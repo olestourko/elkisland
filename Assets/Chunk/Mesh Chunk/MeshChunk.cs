@@ -61,7 +61,6 @@ public class MeshChunk : MonoBehaviour {
 		}
 	
 		Generate();
-		if(Init != null) Init(this);
 		if(dev)
 		{
 			SmoothMesh();
@@ -69,7 +68,7 @@ public class MeshChunk : MonoBehaviour {
 			GenerateRandomModels();
 			UpdateModels();
 		}
-		
+		if(Init != null) Init(this);
 	}
 	
 	//--------------------------------------------------------------------------
@@ -107,7 +106,7 @@ public class MeshChunk : MonoBehaviour {
 	{
 		List<float> offsets = new List<float>();
 		foreach(Cell cell in cells_list)
-		{			
+		{	
 			//vert 0
 			if(cell.bottom != null && cell.left != null)
 			{
@@ -462,7 +461,10 @@ public class MeshChunk : MonoBehaviour {
 		foreach(Cell cell in cells_list)
 		{
 			Destroy(cell.model_random);
-			if(cell.cellType != Cell.CellType.Woods) return;
+			if(cell.cellType != Cell.CellType.Woods) 
+			{
+				continue;
+			}
 			float r = Random.Range(0, 1000) / 1000.0f;
 			foreach(Range range in spawn_ranges)
 			{
@@ -492,13 +494,13 @@ public class MeshChunk : MonoBehaviour {
 	{
 		foreach(Cell cell in cells_list)
 		{
-			Destroy(cell.model_instance);
 			List<Cell.CellType> valid_cell_types = new List<Cell.CellType>();
 			valid_cell_types.Add(Cell.CellType.Path);
 			valid_cell_types.Add(Cell.CellType.Path_Start);
 			valid_cell_types.Add(Cell.CellType.Path_End);	
 			if(!valid_cell_types.Contains(cell.cellType)) continue;
-			
+			Destroy(cell.model_random);
+
 			int num_adjacent_paths = 0;
 			if(cell.left != null) { if(valid_cell_types.Contains(cell.left.cellType)) num_adjacent_paths++; }
 			if(cell.right != null) { if(valid_cell_types.Contains(cell.right.cellType)) num_adjacent_paths++; }

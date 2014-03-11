@@ -41,16 +41,17 @@ public class WorldGrid : MonoBehaviour {
 	public Region visible_region = new Region();
 	private float generation_timer = 0.0f;
 	
-	//Paths (experimental)
+	//Paths
 	private float t = 0.0f;
 	public List<Path> paths = new List<Path>();
+	public List<Schema> path_scemas = new List<Schema>();
 	public Transform path_start;
 	public Transform path_end;
-
 	
 	//Path-Locations
-	private List<Path_Location_Pair> pairs = new List<Path_Location_Pair>();
-	
+	public List<Path_Location_Pair> pairs = new List<Path_Location_Pair>();
+	private int last_location_n = 0;
+
 	//Threading (experimental)
 	Thread thread = null;
 	private List<Path> paths_threading_out;
@@ -61,9 +62,10 @@ public class WorldGrid : MonoBehaviour {
 	{
 		instance = this;
 		gui = GameObject.Find("gui").GetComponent("gui") as gui;
-		
-		//GenerateRegion(path_target.position);
-		//GenerateRegion(Vector3.right * 60.0f);
+
+		prescence.transform.position = path_start.position + Vector3.up * 0.1f;
+		GenerateRegion(path_start.position);
+		GenerateRegion(path_end.position);
 	}
 	
 	void Update()
@@ -103,6 +105,15 @@ public class WorldGrid : MonoBehaviour {
 				if(distance < closest_distance) closest_distance = distance;
 			}
 		}
+		foreach(Path_Location_Pair pair in pairs)
+		{
+			foreach(Cell cell in pair.path.getCells())
+			{
+				float distance = Vector3.Distance(cell.position, prescence.transform.position);
+				if(distance < closest_distance) closest_distance = distance;
+			}
+		}
+
 		
 		//Draw perpendicular vectors for path cells
 		//foreach(Path path in paths) path.DrawPerpVector();
@@ -115,7 +126,17 @@ public class WorldGrid : MonoBehaviour {
 		/*--------------------------------------------------------------------------*/
 		GenerateRegion(prescence.transform.position);
 		
-		
+		/*--------------------------------------------------------------------------*/
+		/*Initial MeshChunk Generation (For paths					               	*/
+		/*--------------------------------------------------------------------------*/
+		if(pending_chunks.Count == 0 && paths.Count == 1)
+		{
+			if (!paths[0].IsComplete())
+			{
+				GenerateRegion(paths[0].getEnd().position);
+			}
+		}
+
 		/*--------------------------------------------------------------------------*/
 		/*MeshChunk set Active/Inactive				           						*/
 		/*--------------------------------------------------------------------------*/
@@ -248,8 +269,8 @@ public class WorldGrid : MonoBehaviour {
 	{
 		forests_generated++;
 		
-		MeshChunk chunk_to_instantiate = chunk_prefab_plain;
-		if(forests_generated < 72) chunk_to_instantiate = chunk_prefab_forest;
+		MeshChunk chunk_to_instantiate = chunk_prefab_forest;
+		//if(forests_generated < 72) chunk_to_instantiate = chunk_prefab_forest;
 		
 		MeshChunk chunk = Instantiate(chunk_to_instantiate) as MeshChunk;
 		chunk.transform.parent = this.transform;
@@ -381,6 +402,7 @@ public class WorldGrid : MonoBehaviour {
 	
 	private void ChunkInitListener(MeshChunk _chunk)
 	{
+		//Debug.Log (pending_chunks.Count + " - " + completed_chunks.Count);
 		pending_chunks.Remove(_chunk);
 		completed_chunks.Add(_chunk);
 		if(pending_chunks.Count == 0)
@@ -388,120 +410,131 @@ public class WorldGrid : MonoBehaviour {
 			if(selected_region != null) selected_region.Deselect();
 			Region region = new Region(completed_chunks);
 			foreach(MeshChunk chunk in chunks_list) chunk.LinkCells();
+			completed_chunks = new List<MeshChunk>();
+
+			//Get all cells accessible from path start
+			Fill fill = new Fill();
+			List<Node> filled_nodes = fill.Solve(new Region(chunks_list).GetClosestChunk(path_start.position).GetCellClosestTo(path_start.position));
+			List<MeshChunk> filled_chunks = new List<MeshChunk>();
+			foreach(Node node in filled_nodes)
+			{
+				foreach(MeshChunk chunk in chunks_list)
+				{
+					if(chunk.hasCell(node as Cell) && !filled_chunks.Contains(chunk))
+						filled_chunks.Add(chunk);
+				}
+			}
+			Region everything = new Region(filled_chunks);
+
+			//Create initial path
+			if(paths.Count == 0)
+			{				
+				//Create a new path and set its targets
+				Cell start_cell = everything.GetClosestCell(path_start.position);
+				Cell end_cell = everything.GetClosestCell(path_end.position);
+
+				Path path = everything.GeneratePath(start_cell, end_cell);
+				path.target = path_end.position;
+				path.target_cell = new Region(chunks_list).GetClosestCell(path_end.position);
+				paths.Add(path);
+					path_scemas.Add(new Schema_MainPath(path));
+				region.ApplyPath(path);
+			}
+			//Paths exist!
+			else
+			{					
+				//Attempt to extend all path into the region
+				foreach(Path path in paths)
+				{
+					Cell target_cell = everything.GetClosestCell(path.target);
+					//There may be more than one path generated for
+					/*
+					foreach(Path generated_path in everything.GeneratePath(path, target_cell))
+					{
+						if(generated_path != null)
+						{
+							path.Append(generated_path);
+							everything.ApplyPath(path);
+						}
+					}
+					*/
+					Path generated_path = everything.GeneratePath(path.getEnd(), target_cell);
+					if(generated_path != null)
+					{
+						path.Append(generated_path);
+						everything.ApplyPath(generated_path);
+					}
+				}
+			}
+			selected_region = region;
+
+
+			//Run the path schema and generate branching paths where needed
+			foreach(Schema schema in path_scemas)
+			{
+				List<int> branch_points = (schema as Schema_MainPath).Run();
+				foreach(int point in branch_points)
+				{
+					Cell path_cell = paths[0].getCells()[point];
+					Vector3 target = path_cell.position + (paths[0].GetPerpendicular(path_cell) * 8.0f);
+					Cell target_cell = everything.GetClosestCell(target);
+					Path path = everything.GeneratePath(path_cell, target_cell);
+					path.target = target;
+					path.target_cell = target_cell;
+
+					Path_Location_Pair pair = new Path_Location_Pair();
+					pair.path = path;
+					pairs.Add(pair);
+					everything.ApplyPath(path);
+				}
+			}
+
+			//Attempt to extend each paith in path-location pairs into the region
+			/*
+			foreach(Path_Location_Pair pair in pairs)
+			{
+				Cell target_cell = everything.GetClosestCell(pair.path.target);
+				foreach(Path generated_path in everything.GeneratePath(pair.path, target_cell))
+				{
+					if(generated_path != null)
+					{
+						pair.path.Append(generated_path);
+						everything.ApplyPath(pair.path);
+					}
+				}	
+			}
+			*/
+
+			//Spawn end location for each branching path if its complete
+			foreach(Path_Location_Pair pair in pairs)
+			{
+				if(pair.path.IsComplete() && pair.location == null)
+				{
+					GameObject location = Instantiate(cottage_prefab) as GameObject;
+
+					float random_rotation = Random.Range(0, Mathf.PI * 2.0f);
+
+					location.transform.position = pair.path.getEnd().position + new Vector3(0.5f, 0, 1.5f);
+					location.transform.Rotate(new Vector3(0.0f, 0.0f, random_rotation * 57.3f));
+					pair.location = location.GetComponent("Location") as Location;
+					pair.location.n = last_location_n;
+					last_location_n++;
+
+				}
+			}
+
+			//Update mesh height and models
 			foreach(MeshChunk chunk in chunks_list) 
 			{
 				chunk.SmoothMesh();
 				chunk.UpdateMesh();
 				chunk.GenerateRandomModels();
-			}
-			completed_chunks = new List<MeshChunk>();
-			
-			//Create initial path
-			if(paths.Count == 0)
-			{				
-				//Create a new path and set its targets
-				MeshChunk start_chunk = region.GetClosestChunk(path_start.position);
-					Cell start_cell = start_chunk.GetCellClosestTo(path_start.position);
-				MeshChunk end_chunk = region.GetClosestChunk(path_end.position);
-					Cell end_cell = end_chunk.GetCellClosestTo(path_end.position);
-				
-				
-				Path path = region.GeneratePath(start_cell, end_cell);
-				path.target = path_end.position;
-				path.target_cell = end_cell;
-				paths.Add(path);
-				region.ApplyPath(path);
-								
-				//Set player position to start of path(to be changed later. also note that this will cause another region to generate.
-				Vector3 player_position = new Vector3(path.getStart().position.x,
-					prescence.transform.position.y,
-					(path.getStart().position.z));
-				prescence.transform.position = player_position;
-				gui.path_count = paths.Count;
-				ready = true;
-			}
-			//Paths exist!
-			else
-			{					
-				//If the path has exceded a certain length, create a branch
-				if(paths[0].getLength() > 15 && pairs.Count < 1)
-				{
-					//Get all cells accessible from path start
-					Fill fill = new Fill();
-					List<Node> filled_nodes = fill.Solve(region.GetCells()[0]);
-					List<MeshChunk> filled_chunks = new List<MeshChunk>();
-					foreach(Node node in filled_nodes)
-					{
-						foreach(MeshChunk chunk in chunks_list)
-						{
-							if(chunk.hasCell(node as Cell) && !filled_chunks.Contains(chunk))
-								filled_chunks.Add(chunk);
-						}
-					}
-					
-					Debug.Log(filled_nodes.Count);
-					Debug.Log(filled_chunks.Count);
-					
-					Region everything = new Region(filled_chunks);
-					Cell path_cell = paths[0].getCells()[4];
-					Vector3 target = path_cell.position + (paths[0].GetPerpendicular(path_cell) * 8.0f);
-					
-					MeshChunk target_chunk = everything.GetClosestChunk(target);
-						Cell target_cell = target_chunk.GetCellClosestTo(target);
-					Path path = everything.GeneratePath(paths[0].getCells()[4], target_cell);
-					path.target = target;
-					path.target_cell = target_cell;
-					
-					Path_Location_Pair pair = new Path_Location_Pair();
-					pair.path = path;
-					pairs.Add(pair);
-					
-					everything.ApplyPath(path);
-				}
-				
-				//Attempt to extend all path into the region
-				foreach(Path path in paths)
-				{
-					MeshChunk target_chunk = region.GetClosestChunk(path.target);
-					Cell target_cell = target_chunk.GetCellClosestTo(path.target);
-					//There may be more than one path generated fo
-					foreach(Path generated_path in region.GeneratePath(path, target_cell))
-					{
-						if(generated_path != null)
-						{
-							path.Append(generated_path);
-							region.ApplyPath(path);
-						}
-					}
-				}
-				
-				//Attempt to extend each paith in path-location pairs into the region
-				foreach(Path_Location_Pair pair in pairs)
-				{
-					MeshChunk target_chunk = region.GetClosestChunk(pair.path.target);
-					Cell target_cell = target_chunk.GetCellClosestTo(pair.path.target);
-					//There may be more than one path generaed fo
-					foreach(Path generated_path in region.GeneratePath(pair.path, target_cell))
-					{
-						if(generated_path != null)
-						{
-							pair.path.Append(generated_path);
-							region.ApplyPath(pair.path);
-						}
-					}	
-				}				
-			}
-			selected_region = region;
+				chunk.GeneratePathModels();
+				chunk.UpdateModels();
+			}	
+
 		}
-				
-		//Update mesh height (for paths);
-		foreach(MeshChunk chunk in chunks_list) 
-		{
-			chunk.SmoothMesh();
-			chunk.UpdateMesh();
-			chunk.UpdateModels();
-		}		
-		
+
 		//Update GUI
 		gui.chunk = forests_generated;
 		gui.cell_count = forests_generated * 25;
